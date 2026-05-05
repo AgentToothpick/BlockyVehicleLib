@@ -1,5 +1,5 @@
 {
-  "code": "blockghost",
+  "code": "vehicle",
   "class": "EntityChunky",
   "hitboxSize": { "x": 1, "y": 1 },
   "client": {

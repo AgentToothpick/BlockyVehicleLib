@@ -7,17 +7,17 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
-using BlockGhost.Entities;
+using VehicleAPI.Entities;
 
 #nullable disable
 
-namespace BlockGhost.Entities;
+namespace VehicleAPI.Entities;
 
 /// <summary>
 /// This provides functionality for physics-based entity behaviors. It is not an entity behavior on its own.
 /// </summary>
 [DocumentAsJson]
-public abstract class PhysicsBehaviorBaseBlockGhost : EntityBehavior
+public abstract class PhysicsBehaviorBaseVehicle : EntityBehavior
 {
     protected ICoreClientAPI capi;
     protected ICoreServerAPI sapi;
@@ -35,24 +35,24 @@ public abstract class PhysicsBehaviorBaseBlockGhost : EntityBehavior
     public float CollisionYExtra = 1f;
 
     [ThreadStatic]
-    protected internal static CachingBlockGhostCollisionTester collisionTester;
+    protected internal static CachingVehicleCollisionTester collisionTester;
 
-    static PhysicsBehaviorBaseBlockGhost()
+    static PhysicsBehaviorBaseVehicle()
     {
     }
 
-    public PhysicsBehaviorBaseBlockGhost(Vintagestory.API.Common.Entities.Entity entity) : base(entity)
+    public PhysicsBehaviorBaseVehicle(Vintagestory.API.Common.Entities.Entity entity) : base(entity)
     {
     }
     
-    public PhysicsBehaviorBaseBlockGhost(EntityChunky entity) : base(entity)
+    public PhysicsBehaviorBaseVehicle(EntityChunky entity) : base(entity)
     {
     }
 
     public static void InitServerMT(ICoreServerAPI sapi)
     {
-        collisionTester = new CachingBlockGhostCollisionTester();
-        sapi.Event.PhysicsThreadStart += () => collisionTester = new CachingBlockGhostCollisionTester();
+        collisionTester = new CachingVehicleCollisionTester();
+        sapi.Event.PhysicsThreadStart += () => collisionTester = new CachingVehicleCollisionTester();
     }
 
     public void Initialize()

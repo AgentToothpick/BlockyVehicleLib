@@ -8,7 +8,7 @@ using Vintagestory.API.Server;
 using Vintagestory.API.Datastructures;
 
 
-namespace BlockGhost.Entities;
+namespace VehicleAPI.Entities;
 
 [DocumentAsJson]
 [AddDocumentationProperty("waterDragFactor", "Gravity drag factor when in water", "System.Double", "Optional", "1", false)]
@@ -16,8 +16,8 @@ namespace BlockGhost.Entities;
 [AddDocumentationProperty("airDragFallingFactor", "Gravity drag factor when falling", "System.Double", "Optional", "1", false)]
 [AddDocumentationProperty("groundDragFactor", "Horizontal drag factor when on the ground", "System.Double", "Optional", "1", false)]
 [AddDocumentationProperty("gravityFactor", "Multiplier for gravity strength", "System.Double", "Optional", "1", false)]
-public class BlockGhostBehaviourBlockGhostPhysics(EntityChunky entity) : 
-    PhysicsBehaviorBaseBlockGhost(entity),
+public class VehicleBehaviourVehiclePhysics(EntityChunky entity) : 
+    PhysicsBehaviorBaseVehicle(entity),
     IPhysicsTickable,
     IRemotePhysics
 {
@@ -123,7 +123,7 @@ public class BlockGhostBehaviourBlockGhostPhysics(EntityChunky entity) :
     if (motion.Length() > 20.0)
       motion.Set(0.0, 0.0, 0.0);
     this.entity.Pos.Motion.Set(motion);
-    PhysicsBehaviorBaseBlockGhost.collisionTester.NewTick(lPos);
+    PhysicsBehaviorBaseVehicle.collisionTester.NewTick(lPos);
     this.SetState(lPos);
     this.RemoteMotionAndCollision(lPos, dtFactor);
     this.ApplyTests(lPos);
@@ -133,7 +133,7 @@ public class BlockGhostBehaviourBlockGhostPhysics(EntityChunky entity) :
   {
     double num = this.GravityPerSecond / 60.0 * (double) dtFactor + Math.Max(0.0, -0.014999999664723873 * pos.Motion.Y * (double) dtFactor);
     pos.Motion.Y -= num;
-    PhysicsBehaviorBaseBlockGhost.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
+    PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
     this.entity.OnGround = this.entity.CollidedVertically & pos.Motion.Y < 0.0;
     pos.Motion.Y += num;
     pos.SetPos(this.nPos);
@@ -164,14 +164,14 @@ public class BlockGhostBehaviourBlockGhostPhysics(EntityChunky entity) :
     if (this.feetInLiquidBefore || this.swimmingBefore)
     {
       motion.Scale(Math.Pow(this.WaterDragValue, (double) dt * 33.0));
-      if ((object) BlockGhostBehaviourBlockGhostPhysics.tmpPos == null)
-        BlockGhostBehaviourBlockGhostPhysics.tmpPos = new BlockPos(pos.Dimension);
-      BlockGhostBehaviourBlockGhostPhysics.tmpPos.Set(pos);
-      block = blockAccessor.GetBlock(BlockGhostBehaviourBlockGhostPhysics.tmpPos, 2);
+      if ((object) VehicleBehaviourVehiclePhysics.tmpPos == null)
+        VehicleBehaviourVehiclePhysics.tmpPos = new BlockPos(pos.Dimension);
+      VehicleBehaviourVehiclePhysics.tmpPos.Set(pos);
+      block = blockAccessor.GetBlock(VehicleBehaviourVehiclePhysics.tmpPos, 2);
       if (this.feetInLiquidBefore && block is IBlockFlowing blockFlowing && !blockFlowing.IsStill)
       {
         float num = 300f / GameMath.Clamp((float)entity.MaterialDensity, 750f, 2500f) * dtFactor;
-        FastVec3f pushVector = blockFlowing.GetPushVector(BlockGhostBehaviourBlockGhostPhysics.tmpPos);
+        FastVec3f pushVector = blockFlowing.GetPushVector(VehicleBehaviourVehiclePhysics.tmpPos);
         motion.Add(pushVector * num);
       }
     }
@@ -216,7 +216,7 @@ public class BlockGhostBehaviourBlockGhostPhysics(EntityChunky entity) :
 
   protected virtual void applyCollision(EntityPos pos, float dtFactor)
   {
-    PhysicsBehaviorBaseBlockGhost.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
+    PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
   }
 
   public void ApplyTests(EntityPos pos)
@@ -263,12 +263,12 @@ public class BlockGhostBehaviourBlockGhostPhysics(EntityChunky entity) :
     }
     else
     {
-      Cuboidd entityBox = PhysicsBehaviorBaseBlockGhost.collisionTester.entityBox;
+      Cuboidd entityBox = PhysicsBehaviorBaseVehicle.collisionTester.entityBox;
       int x2 = (int) entityBox.X2;
       int y2 = (int) entityBox.Y2;
       int z2 = (int) entityBox.Z2;
       int z1 = (int) entityBox.Z1;
-      BlockPos tmpPos = PhysicsBehaviorBaseBlockGhost.collisionTester.tmpPos;
+      BlockPos tmpPos = PhysicsBehaviorBaseVehicle.collisionTester.tmpPos;
       tmpPos.SetDimension(entity.Pos.Dimension);
       for (int y1 = (int) entityBox.Y1; y1 <= y2; ++y1)
       {
@@ -300,7 +300,7 @@ public class BlockGhostBehaviourBlockGhostPhysics(EntityChunky entity) :
     if ((mountableSupplier != null ? (mountableSupplier.IsBeingControlled() ? 1 : 0) : 0) != 0 && entity.World.Side == EnumAppSide.Server)
       return;
     EntityPos pos = entity.Pos;
-    PhysicsBehaviorBaseBlockGhost.collisionTester.AssignToEntity((PhysicsBehaviorBaseBlockGhost) this, pos.Dimension);
+    PhysicsBehaviorBaseVehicle.collisionTester.AssignToEntity((PhysicsBehaviorBaseVehicle) this, pos.Dimension);
     int num = pos.Motion.Length() > 0.1 ? 10 : 1;
     float dt1 = dt / (float) num;
     for (int index = 0; index < num; ++index)
