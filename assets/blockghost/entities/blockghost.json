@@ -1,0 +1,21 @@
+{
+  "code": "blockghost",
+  "class": "EntityChunky",
+  "hitboxSize": { "x": 1, "y": 1 },
+  "client": {
+    "renderer": "Dummy",
+    "behaviors": [
+      {
+        "code": "passivephysics"
+      }
+    ]
+  },
+  "server": {
+    "behaviors": [
+      {
+        "code": "passivephysics"
+      }
+    ]
+  },
+  "tags": ["inanimate", "vehicle"]
+}

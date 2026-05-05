@@ -1,0 +1,13 @@
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\bin\Debug\Mods\mod\modinfo.json
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\bin\Debug\Mods\mod\BlockGhost.deps.json
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\bin\Debug\Mods\mod\BlockGhost.dll
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\bin\Debug\Mods\mod\BlockGhost.pdb
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\BlockGhost.csproj.AssemblyReference.cache
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\BlockGhost.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\BlockGhost.AssemblyInfoInputs.cache
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\BlockGhost.AssemblyInfo.cs
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\BlockGhost.csproj.CoreCompileInputs.cache
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\BlockGhost.dll
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\refint\BlockGhost.dll
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\BlockGhost.pdb
+C:\Users\Henry\AppData\Roaming\VintagestoryData\Mods\BlockGhost\BlockGhost\obj\Debug\ref\BlockGhost.dll
