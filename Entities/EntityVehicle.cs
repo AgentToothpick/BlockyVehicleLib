@@ -11,30 +11,30 @@ using Vintagestory.GameContent;
 using Vintagestory.Server;
 using static Vintagestory.API.Config.GlobalConstants;
 
-namespace BlockGhost.Entities;
+namespace VehicleAPI.Entities;
 
-internal class EntityBlockGhost : EntityChunky
+internal class EntityVehicle : EntityChunky
 {
-    public EntityBlockGhost()
+    public EntityVehicle()
     {
-        this.Stats = new EntityStats((Vintagestory.API.Common.Entities.Entity) this);
+        this.Stats = new EntityStats((Entity) this);
         this.WatchedAttributes.SetAttribute("dim", (IAttribute) new IntAttribute());
     }
     
     public virtual void OnEntitySpawn() => base.OnEntitySpawn();
 
-    public static EntityChunky CreateBlockGhost(ICoreServerAPI sapi, IMiniDimension dim)
+    public static EntityChunky CreateVehicle(ICoreServerAPI sapi, IMiniDimension dim)
     {
         EntityChunky entity = (EntityChunky) sapi.World.ClassRegistry.CreateEntity(nameof (EntityChunky));
-        ((RegistryObject) entity).Code = new AssetLocation("blockghost:blockghost");
+        ((RegistryObject) entity).Code = new AssetLocation("vehicleapi:vehicle");
         entity.AssociateWithDimension(dim);
         return entity;
     }
     
-    public static EntityChunky CreateBlockGhost(ICoreClientAPI capi, IMiniDimension dim)
+    public static EntityChunky CreateVehicle(ICoreClientAPI capi, IMiniDimension dim)
     {
         EntityChunky entity = (EntityChunky) capi.World.ClassRegistry.CreateEntity(nameof (EntityChunky));
-        ((RegistryObject) entity).Code = new AssetLocation("blockghost:blockghost");
+        ((RegistryObject) entity).Code = new AssetLocation("vehicleapi:vehicle");
         entity.AssociateWithDimension(dim);
         return entity;
     }

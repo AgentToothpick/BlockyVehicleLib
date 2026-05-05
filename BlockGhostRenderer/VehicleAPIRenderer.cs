@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using BlockGhost.Network;
+using VehicleAPI.Network;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
-namespace BlockGhost.BlockGhostRenderer;
+namespace VehicleAPI.VehicleRenderer;
 
-public class BlockGhostRenderer: IRenderer, IDisposable
+public class VehicleRenderer: IRenderer, IDisposable
 {
-    private readonly Dictionary<long, BlockGhostDimPacket> gridChunks = new Dictionary<long, BlockGhostDimPacket>();
+    private readonly Dictionary<long, VehicleDimPacket> gridChunks = new Dictionary<long, VehicleDimPacket>();
 
     private int playerChunkX;
     private int playerChunkZ;

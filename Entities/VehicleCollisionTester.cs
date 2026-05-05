@@ -1,6 +1,6 @@
 using System;
-using BlockGhost.Entities;
-using BlockGhost.Util;
+using VehicleAPI.Entities;
+using VehicleAPI.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
@@ -8,7 +8,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 
-namespace BlockGhost.Entities
+namespace VehicleAPI.Entities
 
 #nullable disable
 
@@ -22,7 +22,7 @@ namespace BlockGhost.Entities
         Stuck
     }
 
-    public class BlockGhostCollisionTester : CollisionTester
+    public class VehicleCollisionTester : CollisionTester
     {
         //TODO: Implement new PsuedoCuboidd
         //public CachedCuboidListFaster CollisionBoxList = new();
@@ -590,9 +590,10 @@ namespace BlockGhost.Entities
             return null;
         }
         
-        public Block GetCollidingBlockGhost(IBlockAccessor blockAccessor, PsuedoCuboidd entityBoxRel, Vec3d pos,
+        public Block GetCollidingVehicle(IBlockAccessor blockAccessor, PsuedoCuboidd entityBoxRel, Vec3d pos,
             bool alsoCheckTouch = true)
         {
+            //TODO: Finish this
             PsuedoCuboidd entityBox = sudoBox.SetAndTranslate(entityBoxRel, pos);
 
             int minX = (int)entityBox.X1;
@@ -835,38 +836,38 @@ namespace BlockGhost.Entities
             return false;
         }
         
-        public Vec3d[] FindRelativePosition(EntityPos[] blockGhostPosList, Vec3d pos)
+        public Vec3d[] FindRelativePosition(EntityPos[] VehiclePosList, Vec3d pos)
         {
-            //This needs to account for the rotation of the entity to find the correct local position relative to each blockGhost
+            //This needs to account for the rotation of the entity to find the correct local position relative to each Vehicle
             
-            Vec3d[] relativePos = new Vec3d[blockGhostPosList.Length];
-            for (int i = 0; i < blockGhostPosList.Length; i++)
+            Vec3d[] relativePos = new Vec3d[VehiclePosList.Length];
+            for (int i = 0; i < VehiclePosList.Length; i++)
             {
-                double[] rotation = PsuedoCuboidd.ConvertEulerAngles(blockGhostPosList[i].Pitch, blockGhostPosList[i].Yaw, blockGhostPosList[i].Roll);
+                double[] rotation = PsuedoCuboidd.ConvertEulerAngles(VehiclePosList[i].Pitch, VehiclePosList[i].Yaw, VehiclePosList[i].Roll);
                 double[] rotStar = [-rotation[0], -rotation[1], -rotation[2], 1];
                 double[] qPos = [pos.X, pos.Y, pos.Z, 0];
                 Quaterniond.Multiply(rotation, rotation, qPos);
                 Quaterniond.Multiply(rotation, rotation, rotStar);
-                relativePos[i].X = blockGhostPosList[i].X - rotation[0];
-                relativePos[i].Y = blockGhostPosList[i].Y - rotation[1];
-                relativePos[i].Z = blockGhostPosList[i].Z - rotation[2];
+                relativePos[i].X = VehiclePosList[i].X - rotation[0];
+                relativePos[i].Y = VehiclePosList[i].Y - rotation[1];
+                relativePos[i].Z = VehiclePosList[i].Z - rotation[2];
             }
             return relativePos;
         }
   
-        public Vec3d FindRelativePosition(EntityPos blockGhostPos, EntityPos entityPos)
+        public Vec3d FindRelativePosition(EntityPos VehiclePos, EntityPos entityPos)
         {
             Vec3d relativePos = new Vec3d();
             
-            double[] rotation = PsuedoCuboidd.ConvertEulerAngles(blockGhostPos.Pitch, blockGhostPos.Yaw, blockGhostPos.Roll);
+            double[] rotation = PsuedoCuboidd.ConvertEulerAngles(VehiclePos.Pitch, VehiclePos.Yaw, VehiclePos.Roll);
             double[] rotStar = [-rotation[0], -rotation[1], -rotation[2], 1];
             double[] qPos = [pos.X, pos.Y, pos.Z, 0];
             Quaterniond.Multiply(rotation, rotation, qPos);
             Quaterniond.Multiply(rotation, rotation, rotStar);
     
-            relativePos.X = blockGhostPos.X - rotation[0];
-            relativePos.Y = blockGhostPos.Y - rotation[1];
-            relativePos.Z = blockGhostPos.Z - rotation[2];
+            relativePos.X = VehiclePos.X - rotation[0];
+            relativePos.Y = VehiclePos.Y - rotation[1];
+            relativePos.Z = VehiclePos.Z - rotation[2];
     
             return relativePos;
         }
@@ -939,7 +940,7 @@ namespace BlockGhost.Entities
     /// Originally intended to be a special version of CollisionTester for BehaviorControlledPhysics, which does not re-do the WalkBlocks() call and re-generate the CollisionBoxList more than once in the same entity tick
     /// <br/>Currently in 1.20 the caching is not very useful when we loop through all entities sequentially - but empirical testing shows it is actually faster not to cache
     /// </summary>
-    public class CachingBlockGhostCollisionTester : BlockGhostCollisionTester
+    public class CachingVehicleCollisionTester : VehicleCollisionTester
     {
         public void NewTick(EntityPos entityPos)
         {
@@ -948,7 +949,7 @@ namespace BlockGhost.Entities
             tmpPos.SetDimension(entityPos.Dimension);
         }
 
-        public void AssignToEntity(PhysicsBehaviorBaseBlockGhost entityPhysics, int dimension)
+        public void AssignToEntity(PhysicsBehaviorBaseVehicle entityPhysics, int dimension)
         {
             minPos.SetDimension(dimension);
             tmpPos.SetDimension(dimension);

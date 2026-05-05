@@ -1,12 +1,12 @@
 using ProtoBuf;
-using BlockGhost.Items;
+using VehicleAPI.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace BlockGhost.Network
+namespace VehicleAPI.Network
 {
     [ProtoContract]
     public class DimensionIndexRequest
@@ -14,7 +14,7 @@ namespace BlockGhost.Network
         [ProtoMember(1)]
         public string playerName;
         [ProtoMember(2)]
-        public int ghostWandID;
+        public int vehicleWandID;
     }
     [ProtoContract]
     public class DimensionIndexResponse
@@ -22,7 +22,7 @@ namespace BlockGhost.Network
         [ProtoMember(1)]
         public int index;
         [ProtoMember(2)]
-        public int ghostWandID;
+        public int vehicleWandID;
     }
     [ProtoContract]
     public class DimensionSpawnRequest
@@ -57,7 +57,7 @@ namespace BlockGhost.Network
     }
     
     [ProtoContract]
-    public class BlockGhostDimPacket
+    public class VehicleDimPacket
     {
         [ProtoMember(1)]
         public int dimensionIndex;

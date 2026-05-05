@@ -2,9 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using BlockGhost.Entities;
-using BlockGhost.Items;
-using BlockGhost.Network;
+using VehicleAPI.Items;
+using VehicleAPI.Entities;
+using VehicleAPI.Network;
 using Vintagestory.API.Client;
 using Vintagestory.API.Server;
 using Vintagestory.API.Config;
@@ -16,9 +16,9 @@ using Vintagestory.Common;
 using Vintagestory.GameContent;
 using Vintagestory.Server;
 
-namespace BlockGhost;
+namespace VehicleAPI;
 
-public class BlockGhostModSystem : ModSystem
+public class VehicleAPIModSystem : ModSystem
 {
     private ICoreAPI api;
     public ICoreServerAPI sapi;
@@ -40,11 +40,11 @@ public class BlockGhostModSystem : ModSystem
     // Useful for registering block/entity classes on both sides
     public override void Start(ICoreAPI coreApi)
     {
-        api.RegisterEntity(Mod.Info.ModID + ".blockghost", typeof(EntityChunky));
-        api.RegisterItemClass(Mod.Info.ModID + ".blockghostwand", typeof(ItemBlockGhostWand));
+        api.RegisterEntity(Mod.Info.ModID + ".vehicle", typeof(EntityChunky));
+        api.RegisterItemClass(Mod.Info.ModID + ".vehiclewand", typeof(ItemVehicleWand));
         
         api.Network
-            .RegisterChannel("BlockGhostNetworkApi")
+            .RegisterChannel("VehicleNetworkApi")
             .RegisterMessageType<DimensionIndexRequest>()
             .RegisterMessageType<DimensionIndexResponse>()
             .RegisterMessageType<DimensionSpawnRequest>()
@@ -60,7 +60,7 @@ public class BlockGhostModSystem : ModSystem
         //_dimensionRegistry = new Dictionary<string, int>();
         //IMiniDimension dim = serverApi.World.BlockAccessor.CreateMiniDimension(new Vec3d(0, 0, 0));
         //int index = serverApi.Server.LoadMiniDimension(dim);
-        //EntityChunky entity = EntityBlockGhost.CreateBlockGhost(serverApi, dim);
+        //EntityChunky entity = EntityVehicle.CreateVehicle(serverApi, dim);
         
         sapi.Event.SaveGameLoaded += OnSaveGameLoaded;
         sapi.Event.GameWorldSave += OnGameWorldSave;
@@ -68,7 +68,7 @@ public class BlockGhostModSystem : ModSystem
         //sapi.Event.PlayerCreate += OnPlayerCreate;
         
         serverChannel = sapi.Network
-            .GetChannel("BlockGhostNetworkApi")
+            .GetChannel("VehicleNetworkApi")
             .SetMessageHandler<DimensionIndexRequest>(OnDimensionIndexRequest)
             .SetMessageHandler<DimensionSpawnRequest>(OnDimensionSpawnRequest)
             .SetMessageHandler<DimensionSpawnClientComplete>(OnDimensionSpawnClientComplete);
@@ -78,10 +78,10 @@ public class BlockGhostModSystem : ModSystem
     
     public void OnDimensionIndexRequest(IServerPlayer player, DimensionIndexRequest message)
     {
-        api.Logger.Event("BlockGhostModSystem.OnDimensionIndexResponse (server side): " + message.playerName);
+        api.Logger.Event("VehicleAPIModSystem.OnDimensionIndexResponse (server side): " + message.playerName);
         int index = GetMiniDimensionPlayerIndex(player);
-        ((ItemBlockGhostWand)api.World.Items[message.ghostWandID]).DimensionIndex = index;
-        serverChannel.SendPacket(new DimensionIndexResponse() { index = index, ghostWandID = message.ghostWandID}, player);
+        ((ItemVehicleWand)api.World.Items[message.vehicleWandID]).DimensionIndex = index;
+        serverChannel.SendPacket(new DimensionIndexResponse() { index = index, vehicleWandID = message.vehicleWandID}, player);
     }
     
     public int GetMiniDimensionPlayerIndex(IPlayer player)
@@ -109,17 +109,17 @@ public class BlockGhostModSystem : ModSystem
     {
         capi = clientApi;
         
-        clientChannel = capi.Network.GetChannel("BlockGhostNetworkApi")
+        clientChannel = capi.Network.GetChannel("VehicleNetworkApi")
             .SetMessageHandler<DimensionIndexResponse>(OnDimensionIndexResponse)
             .SetMessageHandler<DimensionSpawnClientResponse>(OnDimensionSpawnClientResponse);
-        //Mod.Logger.Notification("Hello from template mod client side: " + Lang.Get("blockghost:hello"));
+        //Mod.Logger.Notification("Hello from template mod client side: " + Lang.Get("Vehicle:hello"));
     }
 
     
     private void OnDimensionIndexResponse(DimensionIndexResponse message)
     {
-        api.Logger.Event("BlockGhostModSystem.OnDimensionIndexResponse (client side): " + message.index);
-        ((ItemBlockGhostWand)api.World.Items[message.ghostWandID]).DimensionIndex = message.index;
+        api.Logger.Event("VehicleAPIModSystem.OnDimensionIndexResponse (client side): " + message.index);
+        ((ItemVehicleWand)api.World.Items[message.vehicleWandID]).DimensionIndex = message.index;
     }
 
     public async void OnDimensionSpawnRequest(IPlayer player, DimensionSpawnRequest message)
@@ -163,7 +163,7 @@ public class BlockGhostModSystem : ModSystem
         dim.ClearChunks();
         //create the entity and associate it with the minidimension
         //Note: need to find preexisting entities and either recycle them or remove them
-        EntityChunky entity = EntityBlockGhost.CreateBlockGhost(sapi, dim);
+        EntityChunky entity = EntityVehicle.CreateVehicle(sapi, dim);
         sapi.World.SpawnEntity(entity);
         //dim.CurrentPos.SetPos(entity.Pos);
         serverChannel.SendPacket(new DimensionSpawnClientResponse() {dimId = dim.subDimensionId, blockPos = pos, vecPos = message.pos, blockId = message.blockId}, (IServerPlayer) player);
@@ -176,7 +176,7 @@ public class BlockGhostModSystem : ModSystem
         dim.UnloadUnusedServerChunks();
         IPlayer[] players = sapi.Server.Players;
         dim.CollectChunksForSending(players);
-        api.Logger.Event("BlockGhost Spawned Successfully");
+        api.Logger.Event("Vehicle Spawned Successfully");
     }
 
     private void OnDimensionSpawnClientResponse(DimensionSpawnClientResponse message)
@@ -185,7 +185,7 @@ public class BlockGhostModSystem : ModSystem
         {
             IMiniDimension dim = capi.World.GetOrCreateDimension(message.dimId, message.vecPos);
             dim.CurrentPos.SetPos(message.blockPos);
-            capi.World.SpawnEntity(EntityBlockGhost.CreateBlockGhost(capi, dim));
+            capi.World.SpawnEntity(EntityVehicle.CreateVehicle(capi, dim));
             clientChannel.SendPacket(new DimensionSpawnClientComplete() {success = true});
         }
     }
@@ -218,7 +218,7 @@ public class BlockGhostModSystem : ModSystem
                 /*
                 //need to come back to this
                 //serverChannel.SendPacket(new DimensionIndexResponse { index = index }, ((IServerPlayer)player));
-                sapi.World.SpawnEntity(EntityBlockGhost.CreateBlockGhost(sapi, dim));
+                sapi.World.SpawnEntity(EntityVehicle.CreateVehicle(sapi, dim));
                 */
             }
         }
@@ -230,7 +230,7 @@ public class BlockGhostModSystem : ModSystem
 
     private void OnSaveGameLoaded()
     {
-        byte[] data = sapi.WorldManager.SaveGame.GetData("blockghost.DimensionRegistry");
+        byte[] data = sapi.WorldManager.SaveGame.GetData("Vehicle.DimensionRegistry");
         _dimensionRegistry = data == null ? new Dictionary<string, int>() : SerializerUtil.Deserialize<Dictionary<string, int>>(data);
         //Load all minidimensions from the registry
         //Load all blocks from each minidimension into the world, to be added later
@@ -242,6 +242,6 @@ public class BlockGhostModSystem : ModSystem
         //May need to define how _dimensionRegistry is serialized
         //check how schematics are saved and copy that? Could get big and messy
         //empty dimensions should get skipped, will add later
-        sapi.WorldManager.SaveGame.StoreData("blockghost.DimensionRegistry", SerializerUtil.Serialize(_dimensionRegistry));
+        sapi.WorldManager.SaveGame.StoreData("Vehicle.DimensionRegistry", SerializerUtil.Serialize(_dimensionRegistry));
     }
 }

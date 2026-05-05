@@ -1,8 +1,8 @@
 {
-  "code": "blockghostwand",
-  "class": "blockghost.blockghostwand",
+  "code": "vehiclewand",
+  "class": "vehicleapi.vehiclewand",
   "variantgroups": [
-    { "code": "type", "states": [ "blockghost" ] }
+    { "code": "type", "states": [ "vehicle" ] }
   ],
   "creativeinventory": { "general": ["*"], "items": ["*"], "tools": ["*"] },
   "guiTransform": {
@@ -11,8 +11,8 @@
     "origin": { "x": 0.59, "y": 0.5, "z": 0.49 },
     "scale": 2.6
   },
-  "shape": {"base": "item/blockghostwand"},
-  "texture": {"base": "item/tool/blockghostwand"},
+  "shape": {"base": "item/vehiclewand"},
+  "texture": {"base": "item/tool/vehiclewand"},
   "groundTransform": {
     "translation": { "x": 0, "y": 0, "z": 0 },
     "rotation": { "x": 0, "y": 0, "z": 0 },

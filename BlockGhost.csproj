@@ -47,7 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="assets\blockghost\textures\item\tool\" />
+      <Folder Include="assets\vehicleapi\textures\item\tool\" />
     </ItemGroup>
 
 </Project>

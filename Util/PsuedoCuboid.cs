@@ -8,7 +8,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.Server;
 
-namespace BlockGhost.Util
+namespace VehicleAPI.Util
 { 
     public class PsuedoCuboidd
     {
