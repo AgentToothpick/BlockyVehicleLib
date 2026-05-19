@@ -1,14 +1,14 @@
 {
     "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
     "type": "Code",
-    "modid": "blockghost",
-    "name": "BlockGhost",
+    "modid": "blockyvehiclelib",
+    "name": "BlockyVehicleLib",
     "authors": [
         "Comrade_Toothpik"
     ],
     "description": "To be added",
     "version": "1.0.0",
     "dependencies": {
-        "game": "1.21.0"
+        "game": "1.22.0"
     }
 }

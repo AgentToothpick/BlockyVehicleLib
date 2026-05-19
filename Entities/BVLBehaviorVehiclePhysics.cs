@@ -8,7 +8,7 @@ using Vintagestory.API.Server;
 using Vintagestory.API.Datastructures;
 
 
-namespace VehicleAPI.Entities;
+namespace BlockyVehicleLib.Entities;
 
 [DocumentAsJson]
 [AddDocumentationProperty("waterDragFactor", "Gravity drag factor when in water", "System.Double", "Optional", "1", false)]

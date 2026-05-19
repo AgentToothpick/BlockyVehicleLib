@@ -7,11 +7,11 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
-using VehicleAPI.Entities;
+using BlockyVehicleLib.Entities;
 
 #nullable disable
 
-namespace VehicleAPI.Entities;
+namespace BlockyVehicleLib.Entities;
 
 /// <summary>
 /// This provides functionality for physics-based entity behaviors. It is not an entity behavior on its own.

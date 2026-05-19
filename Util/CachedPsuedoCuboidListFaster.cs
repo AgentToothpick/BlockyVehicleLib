@@ -5,7 +5,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
 #nullable disable
-namespace VehicleAPI.Util;
+namespace BlockyVehicleLib.Util;
 
 /// <summary>
 /// Just like CachedCuboidList except we use structs internally, for RAM access performance. We leave CachedCuboidList just as it is for mod backwards compatibility

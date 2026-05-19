@@ -11,7 +11,7 @@ using Vintagestory.GameContent;
 using Vintagestory.Server;
 using static Vintagestory.API.Config.GlobalConstants;
 
-namespace VehicleAPI.Entities;
+namespace BlockyVehicleLib.Entities;
 
 internal class EntityVehicle : EntityChunky
 {
@@ -26,7 +26,7 @@ internal class EntityVehicle : EntityChunky
     public static EntityChunky CreateVehicle(ICoreServerAPI sapi, IMiniDimension dim)
     {
         EntityChunky entity = (EntityChunky) sapi.World.ClassRegistry.CreateEntity(nameof (EntityChunky));
-        ((RegistryObject) entity).Code = new AssetLocation("vehicleapi:vehicle");
+        ((RegistryObject) entity).Code = new AssetLocation("BlockyVehicleLib:vehicle");
         entity.AssociateWithDimension(dim);
         return entity;
     }
@@ -34,7 +34,7 @@ internal class EntityVehicle : EntityChunky
     public static EntityChunky CreateVehicle(ICoreClientAPI capi, IMiniDimension dim)
     {
         EntityChunky entity = (EntityChunky) capi.World.ClassRegistry.CreateEntity(nameof (EntityChunky));
-        ((RegistryObject) entity).Code = new AssetLocation("vehicleapi:vehicle");
+        ((RegistryObject) entity).Code = new AssetLocation("BlockyVehicleLib:vehicle");
         entity.AssociateWithDimension(dim);
         return entity;
     }

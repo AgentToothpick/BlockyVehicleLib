@@ -1,6 +1,6 @@
 using System;
-using VehicleAPI.Entities;
-using VehicleAPI.Util;
+using BlockyVehicleLib.Entities;
+using BlockyVehicleLib.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
@@ -8,7 +8,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
 
-namespace VehicleAPI.Entities
+namespace BlockyVehicleLib.Entities
 
 #nullable disable
 
@@ -590,29 +590,59 @@ namespace VehicleAPI.Entities
             return null;
         }
         
-        public Block GetCollidingVehicle(IBlockAccessor blockAccessor, PsuedoCuboidd entityBoxRel, Vec3d pos,
-            bool alsoCheckTouch = true)
+        public Block GetCollidingVehicleBlocks(IBlockAccessor blockAccessor, PsuedoCuboidd entityBoxRel, Vec3d pos, 
+            EntityChunky[] vehicleList, bool alsoCheckTouch = true)
         {
             //TODO: Finish this
+            //Need to convert the real position of the vehicle to the corresponding blockpos of the minidimension
             PsuedoCuboidd entityBox = sudoBox.SetAndTranslate(entityBoxRel, pos);
-
+            EntityChunky[] nearbyVehicles = PsuedoCuboidd.FindNearbyVehicles(pos, vehicleList);
+            Vec3d[] relativePos = FindRelativePosition(nearbyVehicles, pos);
             int minX = (int)entityBox.X1;
             int minY = (int)entityBox.Y1 - 1; // -1 for the extra high collision box of fences.
             int minZ = (int)entityBox.Z1;
-
+            
             int maxX = (int)entityBox.X2;
             int maxY = (int)entityBox.Y2;
             int maxZ = (int)entityBox.Z2;
-
-            entityBox.Y1 =
-                Math.Round(entityBox.Y1,
+            
+            int subId;
+            if (nearbyVehicles != null && nearbyVehicles.Length > 0)
+            {
+                Block[] vehicleBlocks = new Block[nearbyVehicles.Length];
+                BlockPos vehicleBlockPos;
+                for (int i = 0; i < nearbyVehicles.Length; i++)
+                {
+                    subId = (nearbyVehicles[i].WatchedAttributes.GetAttribute("dim") as IntAttribute).value;
+                    relativePos[i].X +=
+                        (int)(subId % 4096 /*0x1000*/ * 16384 /*0x4000*/ + 8192 /*0x2000*/);
+                    
+                    relativePos[i].Y += (int)(8192) /*0x2000*/;
+                    
+                    relativePos[i].Z +=
+                        (int)(subId / 4096 /*0x1000*/ * 16384 /*0x4000*/ + 8192 /*0x2000*/);
+                    vehicleBlockPos = new BlockPos((int)relativePos[i].X, (int)relativePos[i].Y, (int)relativePos[i].Z);
+                    
+                    vehicleBlocks[i] = blockAccessor.GetBlock(vehicleBlockPos, BlockLayersAccess.MostSolid);
+                }
+            }
+            else
+            {
+                return null;
+            }
+            
+            entityBox.pos.Y =
+                Math.Round(entityBox.pos.Y,
                     5); // Fix float/double rounding errors. Only need to fix the vertical because gravity.
 
+            //TODO: Fully replace the below to check for blocks in vehicles specifically.
+            //The entityBox needs to be rotated and operate in the minidimension to match the rotation of the vehicle.
+            //The rotation of the entityBox should be the conjugate of the vehicle's rotation.
             BlockPos blockPos = this.blockPos; // Local reference for efficiency
             Vec3d blockPosVec = this.blockPosVec; // Local reference for efficiency
-            for (int y = minY; y <= maxY; y++)
+            for (int y = (int)minY; y <= (int)maxY; y++)
             {
-                blockPos.SetAndCorrectDimension(minX, y, minZ);
+                blockPos.SetAndCorrectDimension(minX, minY, minZ);
                 blockPosVec.Set(minX, y, minZ);
                 for (int x = minX; x <= maxX; x++)
                 {
@@ -623,14 +653,14 @@ namespace VehicleAPI.Entities
                         blockPos.Z = z;
                         Block block = blockAccessor.GetBlock(blockPos, BlockLayersAccess.MostSolid);
 
-                        Cuboidf[] collisionBoxes = block.GetCollisionBoxes(blockAccessor, blockPos);
+                        PsuedoCuboidd[] collisionBoxes = PsuedoCuboidd.CollectCuboidf(block.GetCollisionBoxes(blockAccessor, blockPos), entityBox.rotation);
                         
                         if (collisionBoxes == null || collisionBoxes.Length == 0) continue;
 
                         blockPosVec.Z = z;
                         for (int i = 0; i < collisionBoxes.Length; i++)
                         {
-                            Cuboidf collBox = collisionBoxes[i];
+                            PsuedoCuboidd collBox = collisionBoxes[i];
                             if (collBox == null) continue;
 
                             if (alsoCheckTouch
@@ -869,6 +899,25 @@ namespace VehicleAPI.Entities
             relativePos.Y = VehiclePos.Y - rotation[1];
             relativePos.Z = VehiclePos.Z - rotation[2];
     
+            return relativePos;
+        }
+        
+        public Vec3d[] FindRelativePosition(EntityChunky[] VehicleList, Vec3d pos)
+        {
+            //This needs to account for the rotation of the entity to find the correct local position relative to each Vehicle
+            
+            Vec3d[] relativePos = new Vec3d[VehicleList.Length];
+            for (int i = 0; i < VehicleList.Length; i++)
+            {
+                double[] rotation = PsuedoCuboidd.ConvertEulerAngles(VehicleList[i].Pos.Pitch, VehicleList[i].Pos.Yaw, VehicleList[i].Pos.Roll);
+                double[] rotStar = [-rotation[0], -rotation[1], -rotation[2], 1];
+                double[] qPos = [pos.X, pos.Y, pos.Z, 0];
+                Quaterniond.Multiply(rotation, rotation, qPos);
+                Quaterniond.Multiply(rotation, rotation, rotStar);
+                relativePos[i].X = VehicleList[i].Pos.X - rotation[0];
+                relativePos[i].Y = VehicleList[i].Pos.Y - rotation[1];
+                relativePos[i].Z = VehicleList[i].Pos.Z - rotation[2];
+            }
             return relativePos;
         }
 

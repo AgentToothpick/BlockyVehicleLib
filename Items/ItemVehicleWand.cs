@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Vintagestory;
-using VehicleAPI.Entities;
-using VehicleAPI.Network;
+using BlockyVehicleLib.Entities;
+using BlockyVehicleLib.Network;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -15,7 +15,7 @@ using Vintagestory.Server;
 
 #nullable disable
 
-namespace VehicleAPI.Items;
+namespace BlockyVehicleLib.Items;
 
 public class ItemVehicleWand : Item
 {
@@ -35,7 +35,7 @@ public class ItemVehicleWand : Item
     private EntityPlayer playerEntity;
     private IPlayer player;
     //limit use of modSystem, always check if the api is client or server before using it
-    private VehicleAPIModSystem modSystem;
+    private BlockyVehicleLibModSystem modSystem;
 
     public override void OnLoaded(ICoreAPI coreApi)
     {
@@ -48,7 +48,7 @@ public class ItemVehicleWand : Item
         }
         if (api is ICoreServerAPI)
         {
-            modSystem = ((ICoreServerAPI)api).ModLoader.GetModSystem<VehicleAPIModSystem>();
+            modSystem = ((ICoreServerAPI)api).ModLoader.GetModSystem<BlockyVehicleLibModSystem>();
             serverChannel = ((ICoreServerAPI)api).Network.GetChannel("VehicleNetworkApi")
                 .RegisterMessageType<DimensionIndexRequest>()
                 .RegisterMessageType<DimensionSpawnRequest>()

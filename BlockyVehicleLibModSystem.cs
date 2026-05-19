@@ -2,9 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using VehicleAPI.Items;
-using VehicleAPI.Entities;
-using VehicleAPI.Network;
+using BlockyVehicleLib.Items;
+using BlockyVehicleLib.Entities;
+using BlockyVehicleLib.Network;
 using Vintagestory.API.Client;
 using Vintagestory.API.Server;
 using Vintagestory.API.Config;
@@ -16,9 +16,9 @@ using Vintagestory.Common;
 using Vintagestory.GameContent;
 using Vintagestory.Server;
 
-namespace VehicleAPI;
+namespace BlockyVehicleLib;
 
-public class VehicleAPIModSystem : ModSystem
+public class BlockyVehicleLibModSystem : ModSystem
 {
     private ICoreAPI api;
     public ICoreServerAPI sapi;
@@ -78,7 +78,7 @@ public class VehicleAPIModSystem : ModSystem
     
     public void OnDimensionIndexRequest(IServerPlayer player, DimensionIndexRequest message)
     {
-        api.Logger.Event("VehicleAPIModSystem.OnDimensionIndexResponse (server side): " + message.playerName);
+        api.Logger.Event("BlockyVehicleLibModSystem.OnDimensionIndexResponse (server side): " + message.playerName);
         int index = GetMiniDimensionPlayerIndex(player);
         ((ItemVehicleWand)api.World.Items[message.vehicleWandID]).DimensionIndex = index;
         serverChannel.SendPacket(new DimensionIndexResponse() { index = index, vehicleWandID = message.vehicleWandID}, player);
@@ -118,7 +118,7 @@ public class VehicleAPIModSystem : ModSystem
     
     private void OnDimensionIndexResponse(DimensionIndexResponse message)
     {
-        api.Logger.Event("VehicleAPIModSystem.OnDimensionIndexResponse (client side): " + message.index);
+        api.Logger.Event("BlockyVehicleLibModSystem.OnDimensionIndexResponse (client side): " + message.index);
         ((ItemVehicleWand)api.World.Items[message.vehicleWandID]).DimensionIndex = message.index;
     }
 
