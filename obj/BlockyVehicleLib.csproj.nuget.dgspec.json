@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockGhost\\BlockGhost\\BlockGhost.csproj": {}
+    "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockyVehicleLib\\BlockyVehicleLib\\BlockyVehicleLib.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockGhost\\BlockGhost\\BlockGhost.csproj": {
+    "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockyVehicleLib\\BlockyVehicleLib\\BlockyVehicleLib.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockGhost\\BlockGhost\\BlockGhost.csproj",
-        "projectName": "BlockGhost",
-        "projectPath": "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockGhost\\BlockGhost\\BlockGhost.csproj",
+        "projectUniqueName": "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockyVehicleLib\\BlockyVehicleLib\\BlockyVehicleLib.csproj",
+        "projectName": "BlockyVehicleLib",
+        "projectPath": "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockyVehicleLib\\BlockyVehicleLib\\BlockyVehicleLib.csproj",
         "packagesPath": "C:\\Users\\Henry\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockGhost\\BlockGhost\\obj\\",
+        "outputPath": "C:\\Users\\Henry\\AppData\\Roaming\\VintagestoryData\\Mods\\BlockyVehicleLib\\BlockyVehicleLib\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Henry\\AppData\\Roaming\\NuGet\\NuGet.Config"

@@ -1,12 +1,12 @@
 using ProtoBuf;
-using VehicleAPI.Items;
+using BlockyVehicleLib.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace VehicleAPI.Network
+namespace BlockyVehicleLib.Network
 {
     [ProtoContract]
     public class DimensionIndexRequest

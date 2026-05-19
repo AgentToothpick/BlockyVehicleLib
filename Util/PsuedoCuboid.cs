@@ -8,7 +8,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.Server;
 
-namespace VehicleAPI.Util
+namespace BlockyVehicleLib.Util
 { 
     public class PsuedoCuboidd
     {
@@ -19,7 +19,7 @@ namespace VehicleAPI.Util
         public double[] rotation;//Quaterniond rotation
         public static Vec3d localOrigin = new Vec3d(0, 0, 0);
         public Vec3d[] internalCorners;
-        private static double[] identity = Quaterniond.FromValues(0.0, 0.0, 0.0, 1.0);
+        public static double[] Identity = Quaterniond.FromValues(0.0, 0.0, 0.0, 1.0);
         public Vec3d[] externalCorners;
         public int highestX, highestY, highestZ, lowestX, lowestY, lowestZ;//integer that points to a Vec3d in externalCorners
         public double X1 => externalCorners[lowestX].X;
@@ -37,7 +37,7 @@ namespace VehicleAPI.Util
         {
             this.pos = new Vec3d(0, 0, 0);
             this.size = new Vec3d(1, 1, 1);
-            this.rotation = identity;
+            this.rotation = Identity;
             internalCorners = new Vec3d[8];
             externalCorners = new Vec3d[8];
             SetInternalCorners();
@@ -85,7 +85,7 @@ namespace VehicleAPI.Util
         {
             this.pos = pos;
             this.size = size;
-            this.rotation = identity;
+            this.rotation = Identity;
             internalCorners = new Vec3d[8];
             externalCorners = new Vec3d[8];
             SetInternalCorners();
@@ -96,7 +96,7 @@ namespace VehicleAPI.Util
         {
             this.pos = new Vec3d(x, y, z);
             this.size = new Vec3d(1, 1, 1);
-            this.rotation = identity;
+            this.rotation = Identity;
             internalCorners = new Vec3d[8];
             externalCorners = new Vec3d[8];
             SetInternalCorners();
@@ -132,7 +132,7 @@ namespace VehicleAPI.Util
             double[] qz = [0.0, 0.0, Math.Sin(roll/2), Math.Cos(roll/2)];
             double[] qy = [0.0, Math.Sin(yaw/2), 0.0, Math.Cos(yaw/2)];
             double[] qx = [0.0, 0.0, Math.Sin(pitch/2), Math.Cos(pitch/2)];
-            double[] q = identity;
+            double[] q = Identity;
             Quaterniond.Multiply(q, qz, qy);
             Quaterniond.Multiply(q, q, qx);
             return q;
@@ -166,7 +166,7 @@ namespace VehicleAPI.Util
         {
             this.pos = new Vec3d((x1 + x2)/2, (y1 + y2)/2, (z1 + z2)/2);
             this.size = new Vec3d(Math.Abs(x2 - x1), Math.Abs(y2 - y1), Math.Abs(z2 - z1));
-            this.rotation = identity;
+            this.rotation = Identity;
             return this;
         }
         
@@ -328,7 +328,7 @@ namespace VehicleAPI.Util
             return this;
         }
 
-        public static EntityChunky[]? FindNearbyBlockGhosts(Entity entity, EntityChunky[] allEntityChunky)
+        public static EntityChunky[]? FindNearbyVehicles(Entity entity, EntityChunky[] allEntityChunky)
         {
             List<EntityChunky> nearbyChunkies = new List<EntityChunky>();
             foreach (EntityChunky chunky in allEntityChunky)
@@ -339,6 +339,92 @@ namespace VehicleAPI.Util
                 }
             }
             return nearbyChunkies.ToArray();
+        }
+        
+        public static EntityChunky[]? FindNearbyVehicles(EntityPos entityPos, EntityChunky[] allEntityChunky)
+        {
+            List<EntityChunky> nearbyChunkies = new List<EntityChunky>();
+            foreach (EntityChunky chunky in allEntityChunky)
+            {
+                if (chunky.Pos.DistanceTo(entityPos) <= 140)//140 is the default simulation range(I think).
+                {
+                    nearbyChunkies.Add(chunky);
+                }
+            }
+            return nearbyChunkies.ToArray();
+        }
+        
+        public static EntityChunky[]? FindNearbyVehicles(Vec3d pos, EntityChunky[] allEntityChunky)
+        {
+            List<EntityChunky> nearbyChunkies = new List<EntityChunky>();
+            foreach (EntityChunky chunky in allEntityChunky)
+            {
+                if (chunky.Pos.DistanceTo(pos) <= 140)//140 is the default simulation range(I think).
+                {
+                    nearbyChunkies.Add(chunky);
+                }
+            }
+            return nearbyChunkies.ToArray();
+        }
+        
+        public bool Intersects(Cuboidd other)
+        {
+            return this.X2 > other.X1 && this.X1 < other.X2 && this.Y2 > other.Y1 && this.Y1 < other.Y2 && this.Z2 > other.Z1 && this.Z1 < other.Z2;
+        }
+        
+        public bool Intersects(PsuedoCuboidd other)
+        {
+            return this.X2 > other.X1 && this.X1 < other.X2 && this.Y2 > other.Y1 && this.Y1 < other.Y2 && this.Z2 > other.Z1 && this.Z1 < other.Z2;
+        }
+
+        /// <summary>If the given cuboid intersects with this cuboid</summary>
+        public bool Intersects(Cuboidf other)
+        {
+            return this.X2 > (double) other.X1 && this.X1 < (double) other.X2 && this.Y2 > (double) other.Y1 && this.Y1 < (double) other.Y2 && this.Z2 > (double) other.Z1 && this.Z1 < (double) other.Z2;
+        }
+
+        /// <summary>If the given cuboid intersects with this cuboid</summary>
+        public bool Intersects(Cuboidf other, Vec3d offset)
+        {
+            return this.X2 > (double) other.X1 + offset.X && this.X1 < (double) other.X2 + offset.X && this.Z2 > (double) other.Z1 + offset.Z && this.Z1 < (double) other.Z2 + offset.Z && this.Y2 > (double) other.Y1 + offset.Y && this.Y1 < Math.Round((double) other.Y2 + offset.Y, 5);
+        }
+        
+        /// <summary>If the given cuboid intersects with this cuboid</summary>
+        public bool Intersects(PsuedoCuboidd other, Vec3d offset)
+        {
+            return this.X2 > (double) other.X1 + offset.X && this.X1 < (double) other.X2 + offset.X && this.Z2 > (double) other.Z1 + offset.Z && this.Z1 < (double) other.Z2 + offset.Z && this.Y2 > (double) other.Y1 + offset.Y && this.Y1 < Math.Round((double) other.Y2 + offset.Y, 5);
+        }
+
+        public bool Intersects(Cuboidf other, double offsetx, double offsety, double offsetz)
+        {
+            return this.X2 > (double) other.X1 + offsetx && this.X1 < (double) other.X2 + offsetx && this.Z2 > (double) other.Z1 + offsetz && this.Z1 < (double) other.Z2 + offsetz && this.Y2 > (double) other.Y1 + offsety && this.Y1 < Math.Round((double) other.Y2 + offsety, 5);
+        }
+
+        public bool IntersectsOrTouches(PsuedoCuboidd other, Vec3d offset)
+        {
+            return this.X2 >= (double) other.X1 + offset.X && this.X1 <= (double) other.X2 + offset.X && this.Z2 >= (double) other.Z1 + offset.Z && this.Z1 <= (double) other.Z2 + offset.Z && this.Y2 >= (double) other.Y1 + offset.Y && this.Y1 <= Math.Round((double) other.Y2 + offset.Y, 5);
+        }
+        /// <summary>If the given cuboid intersects with this cuboid</summary>
+        public bool IntersectsOrTouches(Cuboidd other)
+        {
+            return this.X2 >= other.X1 && this.X1 <= other.X2 && this.Y2 >= other.Y1 && this.Y1 <= other.Y2 && this.Z2 >= other.Z1 && this.Z1 <= other.Z2;
+        }
+        
+        public bool IntersectsOrTouches(PsuedoCuboidd other)
+        {
+            return this.X2 >= other.X1 && this.X1 <= other.X2 && this.Y2 >= other.Y1 && this.Y1 <= other.Y2 && this.Z2 >= other.Z1 && this.Z1 <= other.Z2;
+        }
+
+        /// <summary>If the given cuboid intersects with this cuboid</summary>
+        public bool IntersectsOrTouches(Cuboidf other, Vec3d offset)
+        {
+            return this.X2 >= (double) other.X1 + offset.X && this.X1 <= (double) other.X2 + offset.X && this.Z2 >= (double) other.Z1 + offset.Z && this.Z1 <= (double) other.Z2 + offset.Z && this.Y2 >= (double) other.Y1 + offset.Y && this.Y1 <= Math.Round((double) other.Y2 + offset.Y, 5);
+        }
+
+        /// <summary>If the given cuboid intersects with this cuboid</summary>
+        public bool IntersectsOrTouches(Cuboidf other, double offsetX, double offsetY, double offsetZ)
+        {
+            return (this.X2 < (double) other.X1 + offsetX || this.X1 > (double) other.X2 + offsetX || this.Y2 < (double) other.Y1 + offsetY || this.Y1 > (double) other.Y2 + offsetY || this.Z2 < (double) other.Z1 + offsetZ ? 1 : (this.Z1 > (double) other.Z2 + offsetZ ? 1 : 0)) == 0;
         }
         
         public PsuedoCuboidd GrowToInclude(IVec3 vec)

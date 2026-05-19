@@ -1,6 +1,6 @@
 {
   "code": "vehiclewand",
-  "class": "vehicleapi.vehiclewand",
+  "class": "blockyvehiclelib.vehiclewand",
   "variantgroups": [
     { "code": "type", "states": [ "vehicle" ] }
   ],

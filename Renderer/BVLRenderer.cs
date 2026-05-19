@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using VehicleAPI.Network;
+using BlockyVehicleLib.Network;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
-namespace VehicleAPI.VehicleRenderer;
+namespace BlockyVehicleLib.Renderer;
 
 public class VehicleRenderer: IRenderer, IDisposable
 {
