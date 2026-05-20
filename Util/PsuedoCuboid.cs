@@ -333,7 +333,7 @@ namespace BlockyVehicleLib.Util
             List<EntityChunky> nearbyChunkies = new List<EntityChunky>();
             foreach (EntityChunky chunky in allEntityChunky)
             {
-                if (chunky.Pos.DistanceTo(entity.Pos) <= 140)//140 is the default simulation range(I think).
+                if (chunky.Pos.DistanceTo(entity.Pos) <= entity.World.DefaultEntityTrackingRange)
                 {
                     nearbyChunkies.Add(chunky);
                 }
@@ -346,7 +346,7 @@ namespace BlockyVehicleLib.Util
             List<EntityChunky> nearbyChunkies = new List<EntityChunky>();
             foreach (EntityChunky chunky in allEntityChunky)
             {
-                if (chunky.Pos.DistanceTo(entityPos) <= 140)//140 is the default simulation range(I think).
+                if (chunky.Pos.DistanceTo(entityPos) <= GlobalConstants.DefaultSimulationRange)
                 {
                     nearbyChunkies.Add(chunky);
                 }
@@ -359,7 +359,7 @@ namespace BlockyVehicleLib.Util
             List<EntityChunky> nearbyChunkies = new List<EntityChunky>();
             foreach (EntityChunky chunky in allEntityChunky)
             {
-                if (chunky.Pos.DistanceTo(pos) <= 140)//140 is the default simulation range(I think).
+                if (chunky.Pos.DistanceTo(pos) <= GlobalConstants.DefaultSimulationRange)
                 {
                     nearbyChunkies.Add(chunky);
                 }

@@ -231,10 +231,10 @@ namespace BlockyVehicleLib.Entities
         public void ApplyTerrainCollision(
             Entity entity,
             EntityPos entityPos,
-            EntityPos[] entityChunkyPosList,
+            EntityPos[] entityChunkyPosList,//added
             float dtFactor,
             ref Vec3d newPosition,
-            int[] subDimensionId,
+            int[] subDimensionId,//added
             float stepHeight = 1f,
             float yExtra = 1f)
         {
@@ -464,7 +464,7 @@ namespace BlockyVehicleLib.Entities
         //Important Note, I am unsure if getting the block collision boxes this way can support rotating the collision boxes around the entity they are linked to.
         //I suspect not, as cuboid's are defined by 2 points in 3d space
         //might need to make a custom cuboid class that can rotate around a point
-        //I have mad a custom cuboid called PsuedoCuboidd
+        //I have made a custom cuboid called PsuedoCuboidd
         //Quaternions yay
         protected virtual void GenerateCollisionBoxList(
             IBlockAccessor blockAccessor,

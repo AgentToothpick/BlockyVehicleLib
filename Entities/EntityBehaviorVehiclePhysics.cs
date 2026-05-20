@@ -1,4 +1,5 @@
 using System;
+using BlockyVehicleLib.Util;
 using Vintagestory.API;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -45,7 +46,7 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
   public Action<float> OnPhysicsTickCallback;
   [ThreadStatic] private static BlockPos tmpPos;
 
-  public Vintagestory.API.Common.Entities.Entity Entity => this.entity;
+  public Entity Entity => this.entity;
 
   public bool Ticking { get; set; } = true;
 
@@ -53,7 +54,7 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
   {
     this.prevPos.Set(pos);
     this.motionBeforeY = pos.Motion.Y;
-    Vintagestory.API.Common.Entities.Entity entity = this.entity;
+    Entity entity = this.entity;
     this.onGroundBefore = entity.OnGround;
     this.feetInLiquidBefore = entity.FeetInLiquid;
     this.swimmingBefore = entity.Swimming;
@@ -140,7 +141,7 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
   public void MotionAndCollision(EntityPos pos, float dt)
   {
     float dtFactor = 60f * dt;
-    Vintagestory.API.Common.Entities.Entity entity = this.entity;
+    Entity entity = this.entity;
     Vec3d motion = pos.Motion;
     IBlockAccessor blockAccessor = entity.World.BlockAccessor;
     int dimension = pos.Dimension;
@@ -214,12 +215,13 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
 
   protected virtual void applyCollision(EntityPos pos, float dtFactor)
   {
-    PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
+    if (this.vehiclePosList.Length > 0 && this.vehiclePosList.Length == this.subDimensionIdList.Length) PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, this.vehiclePosList/*entityChunkyPosList*/, dtFactor, ref this.newPos, this.subDimensionIdList/*subDimensionId*/, 0.0f, this.CollisionYExtra);
+    else PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
   }
 
   public void ApplyTests(EntityPos pos)
   {
-    Vintagestory.API.Common.Entities.Entity entity = this.entity;
+    Entity entity = this.entity;
     IBlockAccessor blockAccessor = entity.World.BlockAccessor;
     bool flag = pos.Motion.Y <= 0.0;
     entity.OnGround = entity.CollidedVertically & flag;
@@ -291,9 +293,25 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
 
   public void OnPhysicsTick(float dt)
   {
-    Vintagestory.API.Common.Entities.Entity entity = this.entity;
+    Entity entity = this.entity;
     if (entity.State != EnumEntityState.Active || !this.Ticking)
       return;
+    if (entity.Api.Side == EnumAppSide.Server)
+    {
+      EntityChunky[] entityChunkyList = (EntityChunky[])entity.Api.World.GetEntitiesAround(
+        entity.Pos.XYZ,
+        (float)entity.Api.World.DefaultEntityTrackingRange, (float)entity.Api.World.DefaultEntityTrackingRange,
+        Matches);
+      EntityPos[] vehiclePosList = new EntityPos[entityChunkyList.Length];
+      int[] subDimensionIdList = new int[entityChunkyList.Length];
+      for (int i = 0; i < entityChunkyList.Length; i++)
+      {
+        vehiclePosList[i] = entityChunkyList[i].Pos;
+        subDimensionIdList[i] = (entityChunkyList[i].WatchedAttributes.GetAttribute("dim") as IntAttribute).value;
+      }
+      this.vehiclePosList = vehiclePosList;
+      this.subDimensionIdList = subDimensionIdList;
+    }
     IMountable mountableSupplier = this.mountableSupplier;
     if ((mountableSupplier != null ? (mountableSupplier.IsBeingControlled() ? 1 : 0) : 0) != 0 && entity.World.Side == EnumAppSide.Server)
       return;
@@ -309,6 +327,11 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     }
     entity.Pos.SetFrom(pos);
   }
+  private bool Matches(Entity t1)
+  {
+    if (t1 is EntityChunky) return true;
+    return false;
+  }
 
   public void AfterPhysicsTick(float dt)
   {
@@ -318,7 +341,7 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     afterPhysicsTick();
   }
 
-  protected virtual bool IsFirstTick(Vintagestory.API.Common.Entities.Entity entity)
+  protected virtual bool IsFirstTick(Entity entity)
   {
     EntityPos previousServerPos = entity.PreviousServerPos;
     return previousServerPos.X == 0.0 && previousServerPos.Y == 0.0 && previousServerPos.Z == 0.0 && this.prevPos.X == 0.0 && this.prevPos.Y == 0.0 && this.prevPos.Z == 0.0;

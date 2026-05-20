@@ -8,6 +8,7 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 using BlockyVehicleLib.Entities;
+using BlockyVehicleLib.Network;
 
 #nullable disable
 
@@ -21,6 +22,9 @@ public abstract class PhysicsBehaviorBaseVehicle : EntityBehavior
 {
     protected ICoreClientAPI capi;
     protected ICoreServerAPI sapi;
+    protected EntityPos[] vehiclePosList;
+    protected int[] subDimensionIdList;
+    private BlockyVehicleLibModSystem modSystem;
 
     // How often the client should be sending updates.
     protected const float clientInterval = 1 / 15f;
@@ -41,7 +45,7 @@ public abstract class PhysicsBehaviorBaseVehicle : EntityBehavior
     {
     }
 
-    public PhysicsBehaviorBaseVehicle(Vintagestory.API.Common.Entities.Entity entity) : base(entity)
+    public PhysicsBehaviorBaseVehicle(Entity entity) : base(entity)
     {
     }
     
