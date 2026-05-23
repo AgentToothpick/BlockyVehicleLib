@@ -125,7 +125,18 @@ namespace BlockyVehicleLib.Util
             }
             return output;
         }
-        
+
+        public PsuedoCuboidd SetFromCuboidf(Cuboidf cuboid, Vec3d pos)
+        {
+            this.pos = pos;
+            this.SetRotation(Identity);
+            this.size.X = cuboid.Length;
+            this.size.Y = cuboid.Height;
+            this.size.Z = cuboid.Width;
+            SetInternalCorners();
+            GetExternalCorners();
+            return this;
+        }
 
         public static double[] ConvertEulerAngles(double pitch, double yaw, double roll)
         {
@@ -328,6 +339,12 @@ namespace BlockyVehicleLib.Util
             return this;
         }
 
+        /// <summary>
+        /// Redundant function
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="allEntityChunky"></param>
+        /// <returns></returns>
         public static EntityChunky[]? FindNearbyVehicles(Entity entity, EntityChunky[] allEntityChunky)
         {
             List<EntityChunky> nearbyChunkies = new List<EntityChunky>();
@@ -340,7 +357,12 @@ namespace BlockyVehicleLib.Util
             }
             return nearbyChunkies.ToArray();
         }
-        
+        /// <summary>
+        /// Redundant function
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="allEntityChunky"></param>
+        /// <returns></returns>
         public static EntityChunky[]? FindNearbyVehicles(EntityPos entityPos, EntityChunky[] allEntityChunky)
         {
             List<EntityChunky> nearbyChunkies = new List<EntityChunky>();
@@ -353,7 +375,12 @@ namespace BlockyVehicleLib.Util
             }
             return nearbyChunkies.ToArray();
         }
-        
+        /// <summary>
+        /// Redundant function
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="allEntityChunky"></param>
+        /// <returns></returns>
         public static EntityChunky[]? FindNearbyVehicles(Vec3d pos, EntityChunky[] allEntityChunky)
         {
             List<EntityChunky> nearbyChunkies = new List<EntityChunky>();

@@ -8,7 +8,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"vehiclewand": "blockyvehiclelib:item/tool/vehiclewand"
+		"vehiclewand": "item/tool/vehiclewand"
 	},
 	"elements": [
 		{

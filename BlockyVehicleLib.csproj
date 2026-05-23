@@ -47,7 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="assets\vehicleapi\textures\item\tool\" />
+      <Folder Include="assets\blockyvehiclelib\textures\item\tool\" />
     </ItemGroup>
 
 </Project>

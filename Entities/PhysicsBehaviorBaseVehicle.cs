@@ -24,7 +24,7 @@ public abstract class PhysicsBehaviorBaseVehicle : EntityBehavior
     protected ICoreServerAPI sapi;
     protected EntityPos[] vehiclePosList;
     protected int[] subDimensionIdList;
-    private BlockyVehicleLibModSystem modSystem;
+    //private BlockyVehicleLibModSystem modSystem;
 
     // How often the client should be sending updates.
     protected const float clientInterval = 1 / 15f;

@@ -115,7 +115,7 @@ public class ItemVehicleWand : Item
         if (entityType == null)
         {
             api.Logger.Event("entityType == null");
-            ((Vintagestory.API.Common.Entities.Entity)byEntity).World.Logger.Error(
+            ((Entity)byEntity).World.Logger.Error(
                 "ItemVehicleWand: No such entity - vehicle");
         }
         else

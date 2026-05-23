@@ -6,7 +6,7 @@
     "authors": [
         "Comrade_Toothpik"
     ],
-    "description": "To be added",
+    "description": "Library for making block based vehicles.",
     "version": "1.0.0",
     "dependencies": {
         "game": "1.22.0"

@@ -132,7 +132,8 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
   {
     double num = this.GravityPerSecond / 60.0 * (double) dtFactor + Math.Max(0.0, -0.014999999664723873 * pos.Motion.Y * (double) dtFactor);
     pos.Motion.Y -= num;
-    PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
+    if (this.vehiclePosList.Length > 0 && this.vehiclePosList.Length == this.subDimensionIdList.Length) PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, this.vehiclePosList/*entityChunkyPosList*/, dtFactor, ref this.newPos, this.subDimensionIdList/*subDimensionId*/, 0.0f, this.CollisionYExtra);
+    else PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
     this.entity.OnGround = this.entity.CollidedVertically & pos.Motion.Y < 0.0;
     pos.Motion.Y += num;
     pos.SetPos(this.nPos);
@@ -219,6 +220,7 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     else PhysicsBehaviorBaseVehicle.collisionTester.ApplyTerrainCollision(this.entity, pos, dtFactor, ref this.newPos, 0.0f, this.CollisionYExtra);
   }
 
+  //Unsure if this needs to be updated or not
   public void ApplyTests(EntityPos pos)
   {
     Entity entity = this.entity;
@@ -298,19 +300,24 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
       return;
     if (entity.Api.Side == EnumAppSide.Server)
     {
-      EntityChunky[] entityChunkyList = (EntityChunky[])entity.Api.World.GetEntitiesAround(
-        entity.Pos.XYZ,
-        (float)entity.Api.World.DefaultEntityTrackingRange, (float)entity.Api.World.DefaultEntityTrackingRange,
-        Matches);
-      EntityPos[] vehiclePosList = new EntityPos[entityChunkyList.Length];
-      int[] subDimensionIdList = new int[entityChunkyList.Length];
-      for (int i = 0; i < entityChunkyList.Length; i++)
+      EntityChunky[] entityChunkyList = GetNearbyVehicles(entity);
+      if (entityChunkyList.Length > 0)
       {
-        vehiclePosList[i] = entityChunkyList[i].Pos;
-        subDimensionIdList[i] = (entityChunkyList[i].WatchedAttributes.GetAttribute("dim") as IntAttribute).value;
+        EntityPos[] vehiclePosList = new EntityPos[entityChunkyList.Length];
+        int[] subDimensionIdList = new int[entityChunkyList.Length];
+        for (int i = 0; i < entityChunkyList.Length; i++)
+        {
+          vehiclePosList[i] = entityChunkyList[i].Pos;
+          subDimensionIdList[i] = (entityChunkyList[i].WatchedAttributes.GetAttribute("dim") as IntAttribute).value;
+        }
+        this.vehiclePosList = vehiclePosList;
+        this.subDimensionIdList = subDimensionIdList;
       }
-      this.vehiclePosList = vehiclePosList;
-      this.subDimensionIdList = subDimensionIdList;
+      else
+      {
+        this.vehiclePosList = null;
+        this.subDimensionIdList = null;
+      }
     }
     IMountable mountableSupplier = this.mountableSupplier;
     if ((mountableSupplier != null ? (mountableSupplier.IsBeingControlled() ? 1 : 0) : 0) != 0 && entity.World.Side == EnumAppSide.Server)
@@ -352,6 +359,15 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     if (this.sapi == null)
       return;
     this.sapi.Server.RemovePhysicsTickable((IPhysicsTickable) this);
+  }
+
+  public EntityChunky[] GetNearbyVehicles(Entity entity)
+  {
+    EntityChunky[] entityChunkyList = (EntityChunky[])entity.Api.World.GetEntitiesAround(
+      entity.Pos.XYZ,
+      (float)entity.Api.World.DefaultEntityTrackingRange, (float)entity.Api.World.DefaultEntityTrackingRange,
+      Matches);
+    return entityChunkyList;
   }
 
   public override string PropertyName() => "entityvehiclephysics";

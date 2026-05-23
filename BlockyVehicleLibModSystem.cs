@@ -43,7 +43,8 @@ public class BlockyVehicleLibModSystem : ModSystem
     {
         api.RegisterEntity(Mod.Info.ModID + ".vehicle", typeof(EntityChunky));
         api.RegisterItemClass(Mod.Info.ModID + ".vehiclewand", typeof(ItemVehicleWand));
-        
+        api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".entityphysicsbehavior", typeof(EntityBehaviorVehiclePhysics));
+        //api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".vehiclephysicsbehavior", typeof(BVLBehaviorVehiclePhysics));
         api.Network
             .RegisterChannel("VehicleNetworkApi")
             .RegisterMessageType<DimensionIndexRequest>()
@@ -160,7 +161,14 @@ public class BlockyVehicleLibModSystem : ModSystem
         BlockPos pos2 = new BlockPos(new Vec3i(0, 0, 0), 1);
         //pos.Sub(message.blockSel.Position);
         //pos.SetDimension(1);
-        dim.AdjustPosForSubDimension(pos2);
+        pos2.X +=
+            (int)(message.dimensionIndex % 4096 /*0x1000*/ * 16384 /*0x4000*/ + 8192 /*0x2000*/);
+        
+        pos2.Y += 8192 /*0x2000*/;
+        
+        pos2.Z +=
+            (int)(message.dimensionIndex / 4096 /*0x1000*/ * 16384 /*0x4000*/ + 8192 /*0x2000*/);
+        
         dim.ClearChunks();
         //create the entity and associate it with the minidimension
         //Note: need to find preexisting entities and either recycle them or remove them
@@ -174,7 +182,7 @@ public class BlockyVehicleLibModSystem : ModSystem
         int blockId = message.blockId;
         dim.SetBlock(blockId, pos2);
         sapi.World.BlockAccessor.SetBlock(blockId, pos2);
-        dim.UnloadUnusedServerChunks();
+        //dim.UnloadUnusedServerChunks();
         IPlayer[] players = sapi.Server.Players;
         dim.CollectChunksForSending(players);
         api.Logger.Event("Vehicle Spawned Successfully");

@@ -24,7 +24,8 @@ namespace BlockyVehicleLib.Entities
 
     public class VehicleCollisionTester : CollisionTester
     {
-        //TODO: Implement new PsuedoCuboidd
+        //Completed (?) collision detection for entities (Needs testing)
+        //TODO: Implement Collision detection for vehicles
         //public CachedCuboidListFaster CollisionBoxList = new();
         public CachedPsuedoCuboidListFaster CollisionBoxList2 = new();
 
@@ -590,13 +591,21 @@ namespace BlockyVehicleLib.Entities
             return null;
         }
         
-        public Block GetCollidingVehicleBlocks(IBlockAccessor blockAccessor, PsuedoCuboidd entityBoxRel, Vec3d pos, 
-            EntityChunky[] vehicleList, bool alsoCheckTouch = true)
+        public bool IsCollidingVehicle(IBlockAccessor blockAccessor, Cuboidf entityBoxRel, Vec3d pos, EntityChunky[] nearbyVehicles,
+            bool alsoCheckTouch = true)
+        {
+            return GetCollidingVehicleBlock(blockAccessor, entityBoxRel, pos, nearbyVehicles, alsoCheckTouch) != null;
+        }
+        
+        public Block GetCollidingVehicleBlock(IBlockAccessor blockAccessor, Cuboidf entityBoxRel, Vec3d pos, 
+            EntityChunky[] nearbyVehicles, bool alsoCheckTouch = true)
         {
             //TODO: Finish this
             //Need to convert the real position of the vehicle to the corresponding blockpos of the minidimension
-            PsuedoCuboidd entityBox = sudoBox.SetAndTranslate(entityBoxRel, pos);
-            EntityChunky[] nearbyVehicles = PsuedoCuboidd.FindNearbyVehicles(pos, vehicleList);
+            
+            PsuedoCuboidd entityBox = sudoBox.SetFromCuboidf(entityBoxRel, pos);
+            //EntityChunky[] nearbyVehicles = PsuedoCuboidd.FindNearbyVehicles(pos, vehicleList);
+            
             Vec3d[] relativePos = FindRelativePosition(nearbyVehicles, pos);
             int minX = (int)entityBox.X1;
             int minY = (int)entityBox.Y1 - 1; // -1 for the extra high collision box of fences.
@@ -673,6 +682,7 @@ namespace BlockyVehicleLib.Entities
             return null;
         }
 
+        //Not super urgent to get this working, as it's only used in the FloatUpWhenStuck Entity Behavior
         public Cuboidd GetCollidingCollisionBox(IBlockAccessor blockAccessor, PsuedoCuboidd entityBoxRel, Vec3d pos,
             bool alsoCheckTouch = true)
         {
