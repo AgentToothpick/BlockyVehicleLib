@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using BlockyVehicleLib.Items;
 using BlockyVehicleLib.Entities;
@@ -25,6 +26,7 @@ public class BlockyVehicleLibModSystem : ModSystem
     public ICoreServerAPI sapi;
     public ICoreClientAPI capi;
     private Dictionary<string, int> _dimensionRegistry = null!;
+    private Dictionary<int, BlockyVehicle> _loadedMinidimensions = new Dictionary<int, BlockyVehicle>();
     private int _dimensionIndex = -1;
     private bool _spawnSuccess = false;
     
@@ -139,20 +141,21 @@ public class BlockyVehicleLibModSystem : ModSystem
         //Will need a more rigourous way to place blocks in the minidimension once more than one block are involved
         
         IMiniDimension? messageDim = sapi.Server.GetMiniDimension(message.dimensionIndex);
-        IMiniDimension dim;
+        BlockyVehicle dim;
         
         //set the loaded minidimension to the correct index (should be unnecessary in current state, but will keep for future proofing)
         BlockPos pos = message.blockSel.Position.Copy();
         
         if (messageDim == null)
         {
-            dim = sapi.World.BlockAccessor.CreateMiniDimension(new Vec3d((double) pos.X, (double) pos.Y + 1, (double) pos.Z));
+            dim = new BlockyVehicle((BlockAccessorBase)sapi.World.BlockAccessor, pos.ToVec3d(), sapi);
             sapi.Server.SetMiniDimension(dim, message.dimensionIndex);
+            _loadedMinidimensions.Add(message.dimensionIndex, dim);
             sapi.Logger.Error("Mini dimension not found, new dimension created");
         }
         else
         {
-            dim = messageDim;
+            dim = _loadedMinidimensions[message.dimensionIndex];
             sapi.Server.SetMiniDimension(dim, message.dimensionIndex);
             dim.CurrentPos.SetPos(pos); //repeat this on client side
         }
@@ -171,29 +174,72 @@ public class BlockyVehicleLibModSystem : ModSystem
         
         dim.ClearChunks();
         //create the entity and associate it with the minidimension
-        //Note: need to find preexisting entities and either recycle them or remove them
+        //TODO: need to find preexisting entities and either recycle them or remove them
         EntityChunky entity = EntityVehicle.CreateVehicle(sapi, dim);
         sapi.World.SpawnEntity(entity);
         //dim.CurrentPos.SetPos(entity.Pos);
         serverChannel.SendPacket(new DimensionSpawnClientResponse() {dimId = dim.subDimensionId, blockPos = pos, vecPos = message.pos, blockId = message.blockId}, (IServerPlayer) player);
         await WaitingOnClient();
-        
         //Do these after client side
         int blockId = message.blockId;
-        dim.SetBlock(blockId, pos2);
-        sapi.World.BlockAccessor.SetBlock(blockId, pos2);
+        dim.SetBlock(blockId, pos2, BlockLayersAccess.Solid);
+        api.Logger.Event("Block ID: " + dim.GetBlockId(pos2));
+        //sapi.World.BlockAccessor.SetBlock(blockId, pos2, 0);
         //dim.UnloadUnusedServerChunks();
         IPlayer[] players = sapi.Server.Players;
         dim.CollectChunksForSending(players);
         api.Logger.Event("Vehicle Spawned Successfully");
     }
+    /*
+    internal static T? readInternalField<O, T>(ILogger logger, O obj, string fieldName)
+    {
+        if (obj == null)
+        {
+            logger.Error("{0}.{1} Cannot read internal field of null", typeof(O).Name, fieldName);
+            return default(T);
+        }
+
+        FieldInfo? field = typeof(O).GetField(
+            fieldName,
+            // Include public in case they change it to be public
+            BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance
+        );
+        if (field == null)
+        {
+            logger.Error("{0}.{1} does not exist", typeof(O).Name, fieldName);
+            return default(T);
+        }
+        if (field.IsPublic)
+        {
+            logger.Warning("{0}.{1} is public, reflection is no longer needed", typeof(O).Name, fieldName);
+        }
+        object? val = field.GetValue(obj);
+        if (val == null)
+        {
+            logger.Warning("{0}.{1} is null", typeof(O).Name, fieldName);
+            return default(T);
+        }
+        if (!val.GetType().IsAssignableTo(typeof(T)))
+        {
+            logger.Error("{0}.{1} has an unexpected type: {2} that is not assignable to {3}", typeof(O).Name, fieldName, val.GetType(), typeof(T));
+            return default(T);
+        }
+        return (T)val;
+    }*/
 
     private void OnDimensionSpawnClientResponse(DimensionSpawnClientResponse message)
     {
         if (api.Side == EnumAppSide.Client)
         {
-            IMiniDimension dim = capi.World.GetOrCreateDimension(message.dimId, message.vecPos);
-            dim.CurrentPos.SetPos(message.blockPos);
+            BlockyVehicle dim = new BlockyVehicle((BlockAccessorBase)capi.World.BlockAccessor, message.vecPos, capi);
+            capi.World.MiniDimensions[message.dimId] = dim;
+            dim.SetSubDimensionId(message.dimId);
+            //IMiniDimension dim = capi.World.GetOrCreateDimension(message.dimId, message.vecPos);
+            
+            Vec3d newPos = message.vecPos.Add(new Vec3d(0, 1, 0));
+            dim.CurrentPos.SetPos(newPos);
+            dim.selectionTrackingOriginalPos = message.blockPos;//!!!!!!!!!!
+            dim.selectionTrackingOriginalPos.Y += 1;
             capi.World.SpawnEntity(EntityVehicle.CreateVehicle(capi, dim));
             clientChannel.SendPacket(new DimensionSpawnClientComplete() {success = true});
         }
@@ -221,6 +267,7 @@ public class BlockyVehicleLibModSystem : ModSystem
         {
             if (GetMiniDimensionPlayerIndex(player) == -1)
             {
+                
                 IMiniDimension dim = sapi.World.BlockAccessor.CreateMiniDimension(new Vec3d(0, 0, 0));
                 int index = sapi.Server.LoadMiniDimension(dim);
                 _dimensionRegistry.Add(player.PlayerUID, index);

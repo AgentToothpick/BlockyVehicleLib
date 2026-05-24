@@ -11,12 +11,18 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
+using Vintagestory.Common;
 using Vintagestory.Server;
 
 #nullable disable
 
 namespace BlockyVehicleLib.Items;
-
+//What does this need to do?
+//It needs to select a volume or a group of tethered together (by some as yet undescribed means (reinforced with nails? or just yoink the code from that)) blocks
+//It needs to call a function using the above as an input to create the entity and put the blocks into a shipyard (pocket dimension or beyond the world border)
+//It needs to provide information about the entity or blocks
+//It needs to be able to turn Vehicle entities back into blocks by calling the requisite function
+//most of the code for the functionality of this item will probably sit in other files
 public class ItemVehicleWand : Item
 {
     //private double spawningTime = 1.0;
@@ -169,10 +175,4 @@ public class ItemVehicleWand : Item
         }
         api.Logger.Event("ItemVehicleWand.DimensionIndex == " + DimensionIndex);
     }
-    //What does this need to do?
-    //It needs to select a volume or a group of tethered together (by some as yet undescribed means (reinforced with nails? or just yoink the code from that)) blocks
-    //It needs to call a function using the above as an input to create the entity and put the blocks into a shipyard (pocket dimension or beyond the world border)
-    //It needs to provide information about the entity or blocks
-    //It needs to be able to turn Vehicle entities back into blocks by calling the requisite function
-    //most of the code for the functionality of this item will probably sit in other files
 }
