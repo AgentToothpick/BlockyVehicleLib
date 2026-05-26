@@ -55,7 +55,7 @@ public class VehicleBehaviourVehiclePhysics(EntityChunky entity) :
   {
     this.prevPos.Set(pos);
     this.motionBeforeY = pos.Motion.Y;
-    Vintagestory.API.Common.Entities.Entity entity = this.entity;
+    Entity entity = this.entity;
     this.onGroundBefore = entity.OnGround;
     this.feetInLiquidBefore = entity.FeetInLiquid;
     this.swimmingBefore = entity.Swimming;
@@ -142,7 +142,7 @@ public class VehicleBehaviourVehiclePhysics(EntityChunky entity) :
   public void MotionAndCollision(EntityPos pos, float dt)
   {
     float dtFactor = 60f * dt;
-    Vintagestory.API.Common.Entities.Entity entity = this.entity;
+    Entity entity = this.entity;
     Vec3d motion = pos.Motion;
     IBlockAccessor blockAccessor = entity.World.BlockAccessor;
     int dimension = pos.Dimension;
@@ -293,7 +293,7 @@ public class VehicleBehaviourVehiclePhysics(EntityChunky entity) :
 
   public void OnPhysicsTick(float dt)
   {
-    Vintagestory.API.Common.Entities.Entity entity = this.entity;
+    Entity entity = this.entity;
     if (entity.State != EnumEntityState.Active || !this.Ticking)
       return;
     IMountable mountableSupplier = this.mountableSupplier;
@@ -320,7 +320,7 @@ public class VehicleBehaviourVehiclePhysics(EntityChunky entity) :
     afterPhysicsTick();
   }
 
-  protected virtual bool IsFirstTick(Vintagestory.API.Common.Entities.Entity entity)
+  protected virtual bool IsFirstTick(Entity entity)
   {
     EntityPos previousServerPos = entity.PreviousServerPos;
     return previousServerPos.X == 0.0 && previousServerPos.Y == 0.0 && previousServerPos.Z == 0.0 && this.prevPos.X == 0.0 && this.prevPos.Y == 0.0 && this.prevPos.Z == 0.0;

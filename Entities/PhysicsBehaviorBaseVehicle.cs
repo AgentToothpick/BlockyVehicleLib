@@ -18,7 +18,7 @@ namespace BlockyVehicleLib.Entities;
 /// This provides functionality for physics-based entity behaviors. It is not an entity behavior on its own.
 /// </summary>
 [DocumentAsJson]
-public abstract class PhysicsBehaviorBaseVehicle : EntityBehavior
+public abstract class PhysicsBehaviorBaseVehicle(Entity entity) : PhysicsBehaviorBase(entity)
 {
     protected ICoreClientAPI capi;
     protected ICoreServerAPI sapi;
@@ -45,21 +45,13 @@ public abstract class PhysicsBehaviorBaseVehicle : EntityBehavior
     {
     }
 
-    public PhysicsBehaviorBaseVehicle(Entity entity) : base(entity)
-    {
-    }
-    
-    public PhysicsBehaviorBaseVehicle(EntityChunky entity) : base(entity)
-    {
-    }
-
     public static void InitServerMT(ICoreServerAPI sapi)
     {
         collisionTester = new CachingVehicleCollisionTester();
         sapi.Event.PhysicsThreadStart += () => collisionTester = new CachingVehicleCollisionTester();
     }
 
-    public void Initialize()
+    public virtual void Initialize()
     {
         if (entity.Api is ICoreClientAPI capi) this.capi = capi;
         if (entity.Api is ICoreServerAPI sapi) this.sapi = sapi;

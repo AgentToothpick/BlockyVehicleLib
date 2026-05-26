@@ -50,4 +50,8 @@
       <Folder Include="assets\blockyvehiclelib\textures\item\tool\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    </ItemGroup>
+
 </Project>

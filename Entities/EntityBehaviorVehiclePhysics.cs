@@ -1,6 +1,7 @@
 using System;
 using BlockyVehicleLib.Util;
 using Vintagestory.API;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
@@ -17,9 +18,11 @@ namespace BlockyVehicleLib.Entities;
 [AddDocumentationProperty("groundDragFactor", "Horizontal drag factor when on the ground", "System.Double", "Optional", "1", false)]
 [AddDocumentationProperty("gravityFactor", "Multiplier for gravity strength", "System.Double", "Optional", "1", false)]
 public class EntityBehaviorVehiclePhysics(Entity entity) : 
-    PhysicsBehaviorBaseVehicle(entity),
+    EntityControlledVehiclePhysics(entity),
     IPhysicsTickable,
-    IRemotePhysics
+    IRemotePhysics,
+    IRenderer,
+    IDisposable
 {
   protected readonly Vec3d prevPos = new Vec3d();
   protected double motionBeforeY;
@@ -50,6 +53,8 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
 
   public bool Ticking { get; set; } = true;
 
+  public override string PropertyName() => "entityvehiclephysics";
+  
   public void SetState(EntityPos pos)
   {
     this.prevPos.Set(pos);
@@ -59,6 +64,7 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     this.feetInLiquidBefore = entity.FeetInLiquid;
     this.swimmingBefore = entity.Swimming;
     this.collidedBefore = entity.Collided;
+    
   }
 
   public virtual void SetProperties(JsonObject attributes)
@@ -79,6 +85,7 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
   public void Initialize(EntityProperties properties, JsonObject attributes)
   {
     base.Initialize();
+    sapi.Logger.Event("EntityBehaviorVehiclePhysics Initializing");
     this.SetProperties(attributes);
     if (this.entity.Api is ICoreServerAPI api)
     {
@@ -91,7 +98,7 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     }
   }
 
-  public void OnReceivedClientPos(int version)
+  public override void OnReceivedClientPos(int version)
   {
     if (version > this.previousVersion)
     {
@@ -293,13 +300,19 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     }
   }
 
-  public void OnPhysicsTick(float dt)
+  public override void OnPhysicsTick(float dt)
   {
     Entity entity = this.entity;
     if (entity.State != EnumEntityState.Active || !this.Ticking)
+    {
+      sapi.Logger.Event("PhysicsTick interrupted");
       return;
+    }
     if (entity.Api.Side == EnumAppSide.Server)
     {
+      //This is all extremely bad for performance for a number of reasons
+      //Will need to setup some network channel communication stuff to get this to work in a performant way
+      sapi.Logger.Event("PhysicsTick");
       EntityChunky[] entityChunkyList = GetNearbyVehicles(entity);
       if (entityChunkyList.Length > 0)
       {
@@ -334,13 +347,15 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     }
     entity.Pos.SetFrom(pos);
   }
+  
+  
   private bool Matches(Entity t1)
   {
     if (t1 is EntityChunky) return true;
     return false;
   }
 
-  public void AfterPhysicsTick(float dt)
+  public override void AfterPhysicsTick(float dt)
   {
     Action afterPhysicsTick = this.entity.AfterPhysicsTick;
     if (afterPhysicsTick == null)
@@ -370,5 +385,16 @@ public class EntityBehaviorVehiclePhysics(Entity entity) :
     return entityChunkyList;
   }
 
-  public override string PropertyName() => "entityvehiclephysics";
+  public void Dispose()
+  {
+    throw new NotImplementedException();
+  }
+
+  public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
+  {
+    throw new NotImplementedException();
+  }
+
+  public double RenderOrder { get; }
+  public int RenderRange { get; }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BlockyVehicleLib.Items;
 using BlockyVehicleLib.Entities;
 using BlockyVehicleLib.Network;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Server;
 using Vintagestory.API.Config;
@@ -14,6 +15,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
+using Vintagestory.Client.NoObf;
 using Vintagestory.Common;
 using Vintagestory.GameContent;
 using Vintagestory.Server;
@@ -45,7 +47,9 @@ public class BlockyVehicleLibModSystem : ModSystem
     {
         api.RegisterEntity(Mod.Info.ModID + ".vehicle", typeof(EntityChunky));
         api.RegisterItemClass(Mod.Info.ModID + ".vehiclewand", typeof(ItemVehicleWand));
-        api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".entityphysicsbehavior", typeof(EntityBehaviorVehiclePhysics));
+        api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".basevehiclephysics", typeof(PhysicsBehaviorBaseVehicle));
+        api.RegisterEntityBehaviorClass("blockyvehiclelib.entityvehiclephysics", typeof(EntityBehaviorVehiclePhysics));
+        api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".vehiclephysics", typeof(VehicleBehaviourVehiclePhysics));
         //api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".vehiclephysicsbehavior", typeof(BVLBehaviorVehiclePhysics));
         api.Network
             .RegisterChannel("VehicleNetworkApi")
@@ -79,7 +83,33 @@ public class BlockyVehicleLibModSystem : ModSystem
         
         //Mod.Logger.Notification("Mini dimension loaded, index: " + index);
     }
-    
+
+    public override void AssetsFinalize(ICoreAPI api)
+    {
+        base.AssetsFinalize(api);
+        if(api.Side != EnumAppSide.Server) return;
+        EntityProperties? playerEntity = api.World.GetEntityType(new AssetLocation("game", "player"));
+        if (playerEntity == null)
+        {
+            api.Logger.Error("Could not find player entity");
+            return;
+        }
+        var BVLbehaviors = new List<JsonObject>(1);
+
+        //Forcibly insert behaviors to ensure they are present //TODO most of these are only really needed for th server but some are on client as well for now for accessibility
+        BVLbehaviors.Add(new(new JObject { ["code"] =  "blockyvehiclelib.entityvehiclephysics" }));
+
+        playerEntity.Server.BehaviorsAsJsonObj = [
+            ..playerEntity.Server.BehaviorsAsJsonObj,
+            ..BVLbehaviors
+        ];
+        
+        playerEntity.Client.BehaviorsAsJsonObj = [
+            ..playerEntity.Client.BehaviorsAsJsonObj,
+            ..BVLbehaviors
+        ];
+    }
+
     public void OnDimensionIndexRequest(IServerPlayer player, DimensionIndexRequest message)
     {
         api.Logger.Event("BlockyVehicleLibModSystem.OnDimensionIndexResponse (server side): " + message.playerName);
@@ -177,7 +207,8 @@ public class BlockyVehicleLibModSystem : ModSystem
         //TODO: need to find preexisting entities and either recycle them or remove them
         EntityChunky entity = EntityVehicle.CreateVehicle(sapi, dim);
         sapi.World.SpawnEntity(entity);
-        //dim.CurrentPos.SetPos(entity.Pos);
+        entity.Pos.Add(0.5f, 1f, 0.5f);
+        dim.CurrentPos.SetPos(entity.Pos);
         serverChannel.SendPacket(new DimensionSpawnClientResponse() {dimId = dim.subDimensionId, blockPos = pos, vecPos = message.pos, blockId = message.blockId}, (IServerPlayer) player);
         await WaitingOnClient();
         //Do these after client side
@@ -236,10 +267,12 @@ public class BlockyVehicleLibModSystem : ModSystem
             dim.SetSubDimensionId(message.dimId);
             //IMiniDimension dim = capi.World.GetOrCreateDimension(message.dimId, message.vecPos);
             
-            Vec3d newPos = message.vecPos.Add(new Vec3d(0, 1, 0));
-            dim.CurrentPos.SetPos(newPos);
+            Vec3d newPos = message.vecPos.Add(new Vec3f(0.5f, 1.0f, 0.5f));
+            //dim.CurrentPos.SetPos(newPos);
             dim.selectionTrackingOriginalPos = message.blockPos;//!!!!!!!!!!
             dim.selectionTrackingOriginalPos.Y += 1;
+            WireframeCube.CreateUnitCube(capi);
+            WireframeCube.CreateCenterOriginCube(capi);
             capi.World.SpawnEntity(EntityVehicle.CreateVehicle(capi, dim));
             clientChannel.SendPacket(new DimensionSpawnClientComplete() {success = true});
         }
@@ -265,9 +298,9 @@ public class BlockyVehicleLibModSystem : ModSystem
     {
         if (api.Side == EnumAppSide.Server)
         {
-            if (GetMiniDimensionPlayerIndex(player) == -1)
+            int dimIndex = GetMiniDimensionPlayerIndex(player);
+            if (dimIndex == -1)
             {
-                
                 IMiniDimension dim = sapi.World.BlockAccessor.CreateMiniDimension(new Vec3d(0, 0, 0));
                 int index = sapi.Server.LoadMiniDimension(dim);
                 _dimensionRegistry.Add(player.PlayerUID, index);

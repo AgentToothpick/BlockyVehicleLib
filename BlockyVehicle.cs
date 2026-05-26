@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.Client.NoObf;
 using Vintagestory.Common;
 using Vintagestory.Server;
 

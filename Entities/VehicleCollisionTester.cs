@@ -30,7 +30,7 @@ namespace BlockyVehicleLib.Entities
         public CachedPsuedoCuboidListFaster CollisionBoxList2 = new();
 
         //public Cuboidd entityBox = new();
-
+        public PsuedoCuboidd sudoBox = new();
         // Use class level fields to reduce garbage collection
         //public BlockPos tmpPos = new(Dimensions.WillSetLater);
         //public Vec3d tmpPosDelta = new();
@@ -40,8 +40,7 @@ namespace BlockyVehicleLib.Entities
 
         //public Vec3d pos = new();
         public Vec3d cPos = new();
-
-        readonly PsuedoCuboidd sudoBox = new();
+        
         readonly Cuboidd tmpBox = new();
         readonly BlockPos blockPos = new(Dimensions.WillSetLater);
         readonly Vec3d blockPosVec = new();
@@ -594,27 +593,21 @@ namespace BlockyVehicleLib.Entities
         public bool IsCollidingVehicle(IBlockAccessor blockAccessor, Cuboidf entityBoxRel, Vec3d pos, EntityChunky[] nearbyVehicles,
             bool alsoCheckTouch = true)
         {
-            return GetCollidingVehicleBlock(blockAccessor, entityBoxRel, pos, nearbyVehicles, alsoCheckTouch) != null;
+            return GetCollidingVehicleBlocks(blockAccessor, entityBoxRel, pos, nearbyVehicles, alsoCheckTouch) != null;
         }
         
-        public Block GetCollidingVehicleBlock(IBlockAccessor blockAccessor, Cuboidf entityBoxRel, Vec3d pos, 
+        public Block GetCollidingVehicleBlocks(IBlockAccessor blockAccessor, Cuboidf entityBoxRel, Vec3d pos, 
             EntityChunky[] nearbyVehicles, bool alsoCheckTouch = true)
         {
-            //TODO: Finish this
+            //This I think is finished now?
             //Need to convert the real position of the vehicle to the corresponding blockpos of the minidimension
             
             PsuedoCuboidd entityBox = sudoBox.SetFromCuboidf(entityBoxRel, pos);
             //EntityChunky[] nearbyVehicles = PsuedoCuboidd.FindNearbyVehicles(pos, vehicleList);
             
             Vec3d[] relativePos = FindRelativePosition(nearbyVehicles, pos);
-            int minX = (int)entityBox.X1;
-            int minY = (int)entityBox.Y1 - 1; // -1 for the extra high collision box of fences.
-            int minZ = (int)entityBox.Z1;
             
-            int maxX = (int)entityBox.X2;
-            int maxY = (int)entityBox.Y2;
-            int maxZ = (int)entityBox.Z2;
-            
+            double[,] tmpRotation = new double[nearbyVehicles.Length, 4];
             int subId;
             if (nearbyVehicles != null && nearbyVehicles.Length > 0)
             {
@@ -622,6 +615,11 @@ namespace BlockyVehicleLib.Entities
                 BlockPos vehicleBlockPos;
                 for (int i = 0; i < nearbyVehicles.Length; i++)
                 {
+                    double[] rot = PsuedoCuboidd.ConvertEulerAngles(nearbyVehicles[i].Pos.Pitch,
+                        nearbyVehicles[i].Pos.Yaw, nearbyVehicles[i].Pos.Roll);
+                    double[] conjugate = Quaterniond.FromValues(-rot[0], -rot[1], -rot[2], rot[3]);
+                    for (int j = 0; j < 4; j++)
+                        tmpRotation[i, j] = conjugate[j];
                     subId = (nearbyVehicles[i].WatchedAttributes.GetAttribute("dim") as IntAttribute).value;
                     relativePos[i].X +=
                         (int)(subId % 4096 /*0x1000*/ * 16384 /*0x4000*/ + 8192 /*0x2000*/);
@@ -644,37 +642,52 @@ namespace BlockyVehicleLib.Entities
                 Math.Round(entityBox.pos.Y,
                     5); // Fix float/double rounding errors. Only need to fix the vertical because gravity.
 
-            //TODO: Fully replace the below to check for blocks in vehicles specifically.
-            //The entityBox needs to be rotated and operate in the minidimension to match the rotation of the vehicle.
-            //The rotation of the entityBox should be the conjugate of the vehicle's rotation.
             BlockPos blockPos = this.blockPos; // Local reference for efficiency
             Vec3d blockPosVec = this.blockPosVec; // Local reference for efficiency
-            for (int y = (int)minY; y <= (int)maxY; y++)
+            
+            //The entityBox needs to be rotated and operate in the minidimension to match the rotation of the vehicle.
+            //The rotation of the entityBox should be the conjugate of the vehicle's rotation.
+            for (int i = 0; i < nearbyVehicles.Length; i++)
             {
-                blockPos.SetAndCorrectDimension(minX, minY, minZ);
-                blockPosVec.Set(minX, y, minZ);
-                for (int x = minX; x <= maxX; x++)
+                double[] rot = { tmpRotation[i, 0], tmpRotation[i, 1], tmpRotation[i, 2], tmpRotation[i, 3] };
+                entityBox.SetRotation(rot);
+                entityBox.GetExternalCorners();
+                //These need to be calculated for each nearbyVehicle after the vehicle rotations
+                //have been collected and the conjugate applied to the entityBox
+                int minX = (int)entityBox.X1;
+                int minY = (int)entityBox.Y1 - 1; // -1 for the extra high collision box of fences.
+                int minZ = (int)entityBox.Z1;
+            
+                int maxX = (int)entityBox.X2;
+                int maxY = (int)entityBox.Y2;
+                int maxZ = (int)entityBox.Z2;
+                for (int y = (int)minY; y <= (int)maxY; y++)
                 {
-                    blockPos.X = x;
-                    blockPosVec.X = x;
-                    for (int z = minZ; z <= maxZ; z++)
+                    blockPos.SetAndCorrectDimension(minX, minY, minZ);
+                    blockPosVec.Set(minX, y, minZ);
+                    for (int x = minX; x <= maxX; x++)
                     {
-                        blockPos.Z = z;
-                        Block block = blockAccessor.GetBlock(blockPos, BlockLayersAccess.MostSolid);
-
-                        PsuedoCuboidd[] collisionBoxes = PsuedoCuboidd.CollectCuboidf(block.GetCollisionBoxes(blockAccessor, blockPos), entityBox.rotation);
-                        
-                        if (collisionBoxes == null || collisionBoxes.Length == 0) continue;
-
-                        blockPosVec.Z = z;
-                        for (int i = 0; i < collisionBoxes.Length; i++)
+                        blockPos.X = x;
+                        blockPosVec.X = x;
+                        for (int z = minZ; z <= maxZ; z++)
                         {
-                            PsuedoCuboidd collBox = collisionBoxes[i];
-                            if (collBox == null) continue;
+                            blockPos.Z = z;
+                            Block block = blockAccessor.GetBlock(blockPos, BlockLayersAccess.MostSolid);
 
-                            if (alsoCheckTouch
-                                    ? entityBox.IntersectsOrTouches(collBox, blockPosVec)
-                                    : entityBox.Intersects(collBox, blockPosVec)) return block;
+                            PsuedoCuboidd[] collisionBoxes = PsuedoCuboidd.CollectCuboidf(block.GetCollisionBoxes(blockAccessor, blockPos), entityBox.rotation);
+                        
+                            if (collisionBoxes == null || collisionBoxes.Length == 0) continue;
+
+                            blockPosVec.Z = z;
+                            for (int j = 0; j < collisionBoxes.Length; j++)
+                            {
+                                PsuedoCuboidd collBox = collisionBoxes[j];
+                                if (collBox == null) continue;
+
+                                if (alsoCheckTouch
+                                        ? entityBox.IntersectsOrTouches(collBox, blockPosVec)
+                                        : entityBox.Intersects(collBox, blockPosVec)) return block;
+                            }
                         }
                     }
                 }
@@ -1016,20 +1029,20 @@ namespace BlockyVehicleLib.Entities
 
         protected override void GenerateCollisionBoxList(IBlockAccessor blockAccessor, double motionX, double motionY, double motionZ, float stepHeight, float yExtra, int dimension)
         {
-            Cuboidd entityBox = this.entityBox;  // Local reference for efficiency
+            PsuedoCuboidd sudoBox = this.sudoBox;  // Local reference for efficiency
 
             bool minPosIsUnchanged = minPos.SetAndEquals(
-                (int)(entityBox.X1 + Math.Min(0, motionX)),
-                (int)(entityBox.Y1 + Math.Min(0, motionY) - yExtra), // yExtra looks at blocks below to allow for the extra high collision box of fences
-                (int)(entityBox.Z1 + Math.Min(0, motionZ))
+                (int)(sudoBox.X1 + Math.Min(0, motionX)),
+                (int)(sudoBox.Y1 + Math.Min(0, motionY) - yExtra), // yExtra looks at blocks below to allow for the extra high collision box of fences
+                (int)(sudoBox.Z1 + Math.Min(0, motionZ))
             );
 
-            double y2 = Math.Max(entityBox.Y1 + stepHeight, entityBox.Y2);
+            double y2 = Math.Max(sudoBox.Y1 + stepHeight, sudoBox.Y2);
 
             bool maxPosIsUnchanged = maxPos.SetAndEquals(
-                (int)(entityBox.X2 + Math.Max(0, motionX)),
+                (int)(sudoBox.X2 + Math.Max(0, motionX)),
                 (int)(y2 + Math.Max(0, motionY)),
-                (int)(entityBox.Z2 + Math.Max(0, motionZ))
+                (int)(sudoBox.Z2 + Math.Max(0, motionZ))
             );
 
             if (minPosIsUnchanged && maxPosIsUnchanged)
@@ -1037,12 +1050,12 @@ namespace BlockyVehicleLib.Entities
                 return;
             }
 
-            CollisionBoxList.Clear();
+            CollisionBoxList2.Clear();
             blockAccessor.WalkBlocks(minPos, maxPos, (block, x, y, z) => {
-                Cuboidf[] collisionBoxes = block.GetCollisionBoxes(blockAccessor, tmpPos.Set(x, y, z));
+                PsuedoCuboidd[] collisionBoxes = PsuedoCuboidd.CollectCuboidf(block.GetCollisionBoxes(blockAccessor, tmpPos.Set(x, y, z)), PsuedoCuboidd.Identity);
                 if (collisionBoxes != null)
                 {
-                    CollisionBoxList.Add(collisionBoxes, x, y, z, block);
+                    CollisionBoxList2.Add(collisionBoxes, x, y, z, block);
                 }
             }, true);
         }
@@ -1056,9 +1069,9 @@ namespace BlockyVehicleLib.Entities
 
                 GenerateCollisionBoxList(blockAccessor, 0, 0, 0, 0.5f, 0, entity.Pos.Dimension);
 
-                int collisionBoxListCount = CollisionBoxList.Count;
+                int collisionBoxListCount = CollisionBoxList2.Count;
                 if (collisionBoxListCount == 0) return;
-                Cuboidd[] CollisionBoxListCuboids = CollisionBoxList.cuboids;   // Local reference for efficiency
+                PsuedoCuboidd[] CollisionBoxListCuboids = CollisionBoxList2.cuboids;   // Local reference for efficiency
 
                 double deltaX = 0;
                 double deltaZ = 0;
