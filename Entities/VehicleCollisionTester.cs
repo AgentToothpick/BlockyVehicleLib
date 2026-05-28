@@ -30,7 +30,7 @@ namespace BlockyVehicleLib.Entities
         public CachedPsuedoCuboidListFaster CollisionBoxList2 = new();
 
         //public Cuboidd entityBox = new();
-        public PsuedoCuboidd sudoBox = new();
+        public PsuedoCuboidd sudoBox = new PsuedoCuboidd();
         // Use class level fields to reduce garbage collection
         //public BlockPos tmpPos = new(Dimensions.WillSetLater);
         //public Vec3d tmpPosDelta = new();
@@ -908,19 +908,41 @@ namespace BlockyVehicleLib.Entities
             return relativePos;
         }
   
-        public Vec3d FindRelativePosition(EntityPos VehiclePos, EntityPos entityPos)
+        public static Vec3d FindRelativePosition(EntityPos VehiclePos, EntityPos entityPos)
         {
             Vec3d relativePos = new Vec3d();
             
             double[] rotation = PsuedoCuboidd.ConvertEulerAngles(VehiclePos.Pitch, VehiclePos.Yaw, VehiclePos.Roll);
             double[] rotStar = [-rotation[0], -rotation[1], -rotation[2], 1];
-            double[] qPos = [pos.X, pos.Y, pos.Z, 0];
+            double[] qPos = [entityPos.X, entityPos.Y, entityPos.Z, 0];
             Quaterniond.Multiply(rotation, rotation, qPos);
             Quaterniond.Multiply(rotation, rotation, rotStar);
     
             relativePos.X = VehiclePos.X - rotation[0];
             relativePos.Y = VehiclePos.Y - rotation[1];
             relativePos.Z = VehiclePos.Z - rotation[2];
+    
+            return relativePos;
+        }
+        
+        public static EntityPos FindRelativeEntityPosition(EntityPos VehiclePos, EntityPos entityPos)
+        {
+            //entityPos is assumed to have Identity rotation
+            EntityPos relativePos = new EntityPos();
+            
+            double[] rotation = PsuedoCuboidd.ConvertEulerAngles(VehiclePos.Pitch, VehiclePos.Yaw, VehiclePos.Roll);
+            double[] rotStar = [-rotation[0], -rotation[1], -rotation[2], 1];
+            double[] qPos = [entityPos.X, entityPos.Y, entityPos.Z, 0];
+            Quaterniond.Multiply(rotation, rotation, qPos);
+            Quaterniond.Multiply(rotation, rotation, rotStar);
+    
+            relativePos.X = VehiclePos.X - rotation[0];
+            relativePos.Y = VehiclePos.Y - rotation[1];
+            relativePos.Z = VehiclePos.Z - rotation[2];
+            float[] eulerAngles = Quaterniond.ToEulerAngles(rotStar);
+            relativePos.Pitch = eulerAngles[0];
+            relativePos.Yaw = eulerAngles[1]; 
+            relativePos.Roll = eulerAngles[2];
     
             return relativePos;
         }

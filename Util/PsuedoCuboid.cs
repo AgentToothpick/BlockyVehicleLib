@@ -137,6 +137,28 @@ namespace BlockyVehicleLib.Util
             GetExternalCorners();
             return this;
         }
+        
+        public PsuedoCuboidd SetFromCuboidf(Cuboidf cuboid, EntityPos pos)
+        {
+            this.pos = pos.XYZ;
+            this.SetRotation(ConvertEulerAngles(pos.Pitch, pos.Yaw, pos.Roll));
+            this.size.X = cuboid.Length;
+            this.size.Y = cuboid.Height;
+            this.size.Z = cuboid.Width;
+            SetInternalCorners();
+            GetExternalCorners();
+            return this;
+        }
+        
+        public PsuedoCuboidd SetFromEntityPos(EntityPos entityPos)
+        {
+            this.pos = entityPos.XYZ;
+            this.rotation = ConvertEulerAngles(entityPos.Pitch, entityPos.Yaw, entityPos.Roll);
+            this.externalCornersDirty = true;
+            SetInternalCorners();
+            GetExternalCorners();
+            return this;
+        }
 
         public static double[] ConvertEulerAngles(double pitch, double yaw, double roll)
         {

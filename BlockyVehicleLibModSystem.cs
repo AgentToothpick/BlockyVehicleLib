@@ -298,6 +298,10 @@ public class BlockyVehicleLibModSystem : ModSystem
     {
         if (api.Side == EnumAppSide.Server)
         {
+            //if (player.Entity.GetBehavior<EntityBehaviorVehiclePhysics>() == null) sapi.Logger.Event("Behavior not found");
+            //else sapi.Logger.Event("Behavior found");
+            //This testing revealed the behavior is getting added successfully.
+            //So why is it doing nothing?
             int dimIndex = GetMiniDimensionPlayerIndex(player);
             if (dimIndex == -1)
             {

@@ -24,7 +24,7 @@ public class EntityControlledVehiclePhysics(Entity entity) :
 
     public bool Ticking { get; set; }
     public Entity Entity { get; }
-    public void HandleRemotePhysics(float dt, bool isTeleport)
+    public virtual void HandleRemotePhysics(float dt, bool isTeleport)
     {
         throw new System.NotImplementedException();
     }
